@@ -24,6 +24,9 @@ import org.example.templates.domain.GetTemplateDetailUseCase
 import org.example.templates.domain.GetTemplatesUseCase
 import org.example.templates.domain.ImportTemplateUseCase
 import org.example.templates.presentation.templateRoutes
+import org.example.assessments.data.AssessmentRepositoryImpl
+import org.example.assessments.domain.*
+import org.example.assessments.presentation.assessmentRoutes
 
 fun main() {
     DatabaseFactory.init()
@@ -45,12 +48,29 @@ fun main() {
     val deleteTemplateUseCase = DeleteTemplateUseCase(templateRepository)
     val getTemplateDetailUseCase = GetTemplateDetailUseCase(templateRepository)
 
+    val assessmentRepository = AssessmentRepositoryImpl()
+    val createAssessmentUseCase = CreateAssessmentUseCase(assessmentRepository)
+    val listAssessmentsUseCase = ListAssessmentsUseCase(assessmentRepository)
+    val getAssessmentDetailUseCase = GetAssessmentDetailUseCase(assessmentRepository)
+    val assessmentTransitionUseCase = AssessmentTransitionUseCase(assessmentRepository)
+    val assessmentLockUseCase = AssessmentLockUseCase(assessmentRepository)
+    val updateAssessmentUseCase = UpdateAssessmentUseCase(assessmentRepository)
+
     embeddedServer(CIO, port = 8080) {
         install(ContentNegotiation) { json() }
         routing {
             authRoutes(loginUseCase, refreshTokenUseCase, logoutUseCase)
             userRoutes(getUsersUseCase, updateRoleUseCase)
             templateRoutes(getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase, getTemplateDetailUseCase)
+            assessmentRoutes(
+                createAssessmentUseCase,
+                listAssessmentsUseCase,
+                getAssessmentDetailUseCase,
+                assessmentTransitionUseCase,
+                assessmentLockUseCase,
+                updateAssessmentUseCase,
+                getTemplateDetailUseCase,
+            )
         }
     }.start(wait = true)
 }

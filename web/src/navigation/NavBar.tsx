@@ -9,7 +9,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { screen: 'dashboard', label: 'Дашборд' },
   { screen: 'users',     label: 'Пользователи', adminOnly: true },
-  { screen: 'templates', label: 'Шаблоны ассессментов' },
+  { screen: 'templates', label: 'Шаблоны ассессментов', adminOnly: true },
 ]
 
 interface Props {

@@ -7,8 +7,7 @@ import { LogoutUseCase } from './auth/domain/LogoutUseCase'
 import { LoginPage } from './auth/presentation/LoginPage'
 import { useAuth } from './auth/presentation/useAuth'
 import { NavBar } from './navigation/NavBar'
-import { type Screen, SCREEN_PATHS, pathToScreen, pathToTemplateId } from './navigation/types'
-import { DashboardPage } from './dashboard/presentation/DashboardPage'
+import { type Screen, SCREEN_PATHS, pathToScreen, pathToTemplateId, pathToAssessmentId } from './navigation/types'
 import { TemplatesPage } from './templates/presentation/TemplatesPage'
 import { TemplateViewerPage } from './templates/presentation/TemplateViewerPage'
 import { UsersPage } from './users/presentation/UsersPage'
@@ -20,6 +19,13 @@ import { GetTemplatesUseCase } from './templates/domain/GetTemplatesUseCase'
 import { ImportTemplateUseCase } from './templates/domain/ImportTemplateUseCase'
 import { DeleteTemplateUseCase } from './templates/domain/DeleteTemplateUseCase'
 import { GetTemplateDetailUseCase } from './templates/domain/GetTemplateDetailUseCase'
+import { HttpAssessmentRepository } from './assessments/data/HttpAssessmentRepository'
+import {
+  ListAssessmentsUseCase, CreateAssessmentUseCase, GetAssessmentDetailUseCase,
+  AssessmentTransitionUseCase, AssessmentLockUseCase, UpdateAssessmentUseCase,
+} from './assessments/domain/useCases'
+import { DashboardPage } from './assessments/presentation/DashboardPage'
+import { AssessmentViewerPage } from './assessments/presentation/AssessmentViewerPage'
 
 const tokenStorage = new LocalStorageTokenStorage()
 const authRepo = new HttpAuthRepository()
@@ -36,6 +42,14 @@ const getTemplatesUseCase = new GetTemplatesUseCase(templateRepo)
 const importTemplateUseCase = new ImportTemplateUseCase(templateRepo)
 const deleteTemplateUseCase = new DeleteTemplateUseCase(templateRepo)
 const getTemplateDetailUseCase = new GetTemplateDetailUseCase(templateRepo)
+
+const assessmentRepo = new HttpAssessmentRepository(authFetch)
+const listAssessmentsUseCase = new ListAssessmentsUseCase(assessmentRepo)
+const createAssessmentUseCase = new CreateAssessmentUseCase(assessmentRepo)
+const getAssessmentDetailUseCase = new GetAssessmentDetailUseCase(assessmentRepo)
+const assessmentTransitionUseCase = new AssessmentTransitionUseCase(assessmentRepo)
+const assessmentLockUseCase = new AssessmentLockUseCase(assessmentRepo)
+const updateAssessmentUseCase = new UpdateAssessmentUseCase(assessmentRepo)
 
 function parseCurrentUserId(): number | null {
   const token = tokenStorage.getAccessToken()
@@ -59,6 +73,9 @@ function App() {
   const [viewingTemplateId, setViewingTemplateId] = useState<number | null>(
     () => pathToTemplateId(window.location.pathname)
   )
+  const [viewingAssessmentId, setViewingAssessmentId] = useState<number | null>(
+    () => pathToAssessmentId(window.location.pathname)
+  )
 
   useEffect(() => {
     authFetch.onUnauthenticated = () => forceLogout()
@@ -68,13 +85,14 @@ function App() {
     const onPop = () => {
       setScreen(pathToScreen(window.location.pathname) ?? 'dashboard')
       setViewingTemplateId(pathToTemplateId(window.location.pathname))
+      setViewingAssessmentId(pathToAssessmentId(window.location.pathname))
     }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
   useEffect(() => {
-    if (isAuthenticated && !viewingTemplateId) {
+    if (isAuthenticated && !viewingTemplateId && !viewingAssessmentId) {
       window.history.replaceState({}, '', SCREEN_PATHS[screen])
     }
   }, [isAuthenticated])
@@ -83,6 +101,7 @@ function App() {
     window.history.pushState({}, '', SCREEN_PATHS[s])
     setScreen(s)
     setViewingTemplateId(null)
+    setViewingAssessmentId(null)
   }
 
   const handleViewTemplate = (id: number) => {
@@ -90,9 +109,21 @@ function App() {
     setViewingTemplateId(id)
   }
 
-  const handleBackFromViewer = () => {
+  const handleBackFromTemplate = () => {
     window.history.pushState({}, '', '/templates')
     setViewingTemplateId(null)
+  }
+
+  const handleViewAssessment = (id: number) => {
+    window.history.pushState({}, '', `/assessments/${id}`)
+    setScreen('dashboard')
+    setViewingAssessmentId(id)
+    setViewingTemplateId(null)
+  }
+
+  const handleBackFromAssessment = () => {
+    window.history.pushState({}, '', '/dashboard')
+    setViewingAssessmentId(null)
   }
 
   const handleLogout = async () => {
@@ -122,22 +153,38 @@ function App() {
         </div>
       </header>
       <main className="app-main">
-        {screen === 'dashboard' && <DashboardPage />}
-        {screen === 'users' && (
+        {screen === 'dashboard' && viewingAssessmentId !== null && currentUserId !== null ? (
+          <AssessmentViewerPage
+            assessmentId={viewingAssessmentId}
+            currentUserId={currentUserId}
+            getDetailUseCase={getAssessmentDetailUseCase}
+            transitionUseCase={assessmentTransitionUseCase}
+            lockUseCase={assessmentLockUseCase}
+            updateUseCase={updateAssessmentUseCase}
+            onBack={handleBackFromAssessment}
+          />
+        ) : screen === 'dashboard' ? (
+          <DashboardPage
+            listUseCase={listAssessmentsUseCase}
+            createUseCase={createAssessmentUseCase}
+            getUsersUseCase={getUsersUseCase}
+            getTemplatesUseCase={getTemplatesUseCase}
+            role={role ?? ''}
+            onView={handleViewAssessment}
+          />
+        ) : screen === 'users' ? (
           <UsersPage
             getUsersUseCase={getUsersUseCase}
             updateRoleUseCase={updateRoleUseCase}
             currentUserId={currentUserId}
           />
-        )}
-        {screen === 'templates' && viewingTemplateId !== null && (
+        ) : screen === 'templates' && viewingTemplateId !== null ? (
           <TemplateViewerPage
             templateId={viewingTemplateId}
             getTemplateDetailUseCase={getTemplateDetailUseCase}
-            onBack={handleBackFromViewer}
+            onBack={handleBackFromTemplate}
           />
-        )}
-        {screen === 'templates' && viewingTemplateId === null && (
+        ) : (
           <TemplatesPage
             getTemplatesUseCase={getTemplatesUseCase}
             importTemplateUseCase={importTemplateUseCase}

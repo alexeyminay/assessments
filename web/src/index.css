@@ -606,7 +606,7 @@ body {
 
 /* ── Sidebar ────────────────────────────────────────────── */
 .viewer-sidebar {
-  width: 260px;
+  width: 300px;
   flex-shrink: 0;
   border-right: 1px solid #e5e7eb;
   background: #fafafa;
@@ -743,10 +743,10 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 0.875rem;
-  padding: 0.875rem 1rem;
+  padding: 1.0625rem 1.125rem;
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border-radius: 12px;
 }
 
 .knowledge-checkbox {
@@ -796,11 +796,11 @@ body {
   white-space: nowrap;
 }
 
-.badge-level   { background: #f3f4f6; color: #374151; }
-.badge-intern  { background: #fef9c3; color: #854d0e; }
-.badge-junior  { background: #dcfce7; color: #166534; }
-.badge-middle  { background: #dbeafe; color: #1e40af; }
-.badge-senior  { background: #ede9fe; color: #5b21b6; }
-.badge-score   { background: #f3f4f6; color: #374151; }
-.badge-mandatory { background: #fee2e2; color: #991b1b; }
-.badge-type    { background: #f0fdf4; color: #166534; }
+.badge-level   { background: #f0f0f0; color: #555; }
+.badge-intern  { background: #fef3c7; color: #92600a; }
+.badge-junior  { background: #d1fae5; color: #1a7a50; }
+.badge-middle  { background: #dbeeff; color: #2563a8; }
+.badge-senior  { background: #ede9fe; color: #6d42c4; }
+.badge-score   { background: #f0f0f0; color: #555; }
+.badge-mandatory { background: #fce8e8; color: #b34040; }
+.badge-type    { background: #e6f4ea; color: #2d7a4f; }

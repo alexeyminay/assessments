@@ -126,19 +126,22 @@ function SkillContent({ skill }: { skill: SkillDto }) {
                   {item.description && (
                     <p className="knowledge-description">{item.description}</p>
                   )}
-                  <div className="knowledge-badges">
-                    {item.gradeLevel && (
-                      <span className={`badge badge-level badge-${item.gradeLevel.toLowerCase()}`}>
-                        {item.gradeLevel}
-                      </span>
-                    )}
-                    {item.scorePoints !== null && item.scorePoints !== undefined && (
-                      <span className="badge badge-score">{item.scorePoints} балл</span>
-                    )}
-                    {item.mandatory && (
-                      <span className="badge badge-mandatory">обязательный</span>
-                    )}
-                    <span className="badge badge-type">{item.knowledgeType}</span>
+                  <div className="knowledge-card-footer">
+                    <div className="knowledge-badges">
+                      {item.gradeLevel && (
+                        <span className={`badge badge-level badge-${item.gradeLevel.toLowerCase()}`}>
+                          {item.gradeLevel}
+                        </span>
+                      )}
+                      {item.scorePoints !== null && item.scorePoints !== undefined && (
+                        <span className="badge badge-score">{item.scorePoints} балл</span>
+                      )}
+                      {item.mandatory && (
+                        <span className="badge badge-mandatory">обязательный</span>
+                      )}
+                      <span className="badge badge-type">{item.knowledgeType}</span>
+                    </div>
+                    <button className="comment-btn" disabled>Оставить комментарий</button>
                   </div>
                 </div>
               </div>

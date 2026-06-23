@@ -14,6 +14,10 @@ import { UsersPage } from './users/presentation/UsersPage'
 import { HttpUserRepository } from './users/data/HttpUserRepository'
 import { GetUsersUseCase } from './users/domain/GetUsersUseCase'
 import { UpdateRoleUseCase } from './users/domain/UpdateRoleUseCase'
+import { HttpTemplateRepository } from './templates/data/HttpTemplateRepository'
+import { GetTemplatesUseCase } from './templates/domain/GetTemplatesUseCase'
+import { ImportTemplateUseCase } from './templates/domain/ImportTemplateUseCase'
+import { DeleteTemplateUseCase } from './templates/domain/DeleteTemplateUseCase'
 
 const tokenStorage = new LocalStorageTokenStorage()
 const authRepo = new HttpAuthRepository()
@@ -24,6 +28,11 @@ const authFetch = new AuthFetch(tokenStorage)
 const userRepo = new HttpUserRepository(authFetch)
 const getUsersUseCase = new GetUsersUseCase(userRepo)
 const updateRoleUseCase = new UpdateRoleUseCase(userRepo)
+
+const templateRepo = new HttpTemplateRepository(authFetch)
+const getTemplatesUseCase = new GetTemplatesUseCase(templateRepo)
+const importTemplateUseCase = new ImportTemplateUseCase(templateRepo)
+const deleteTemplateUseCase = new DeleteTemplateUseCase(templateRepo)
 
 function parseCurrentUserId(): number | null {
   const token = tokenStorage.getAccessToken()
@@ -95,7 +104,13 @@ function App() {
       <main className="app-main">
         {screen === 'dashboard' && <DashboardPage />}
         {screen === 'users'     && <UsersPage getUsersUseCase={getUsersUseCase} updateRoleUseCase={updateRoleUseCase} currentUserId={currentUserId} />}
-        {screen === 'templates' && <TemplatesPage />}
+        {screen === 'templates' && (
+          <TemplatesPage
+            getTemplatesUseCase={getTemplatesUseCase}
+            importTemplateUseCase={importTemplateUseCase}
+            deleteTemplateUseCase={deleteTemplateUseCase}
+          />
+        )}
       </main>
     </div>
   )

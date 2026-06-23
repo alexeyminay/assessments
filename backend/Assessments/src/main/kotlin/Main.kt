@@ -18,6 +18,11 @@ import org.example.users.data.UserManagementRepositoryImpl
 import org.example.users.domain.GetUsersUseCase
 import org.example.users.domain.UpdateRoleUseCase
 import org.example.users.presentation.userRoutes
+import org.example.templates.data.TemplateRepositoryImpl
+import org.example.templates.domain.DeleteTemplateUseCase
+import org.example.templates.domain.GetTemplatesUseCase
+import org.example.templates.domain.ImportTemplateUseCase
+import org.example.templates.presentation.templateRoutes
 
 fun main() {
     DatabaseFactory.init()
@@ -33,11 +38,17 @@ fun main() {
     val getUsersUseCase = GetUsersUseCase(userManagementRepository)
     val updateRoleUseCase = UpdateRoleUseCase(userManagementRepository)
 
+    val templateRepository = TemplateRepositoryImpl()
+    val getTemplatesUseCase = GetTemplatesUseCase(templateRepository)
+    val importTemplateUseCase = ImportTemplateUseCase(templateRepository)
+    val deleteTemplateUseCase = DeleteTemplateUseCase(templateRepository)
+
     embeddedServer(CIO, port = 8080) {
         install(ContentNegotiation) { json() }
         routing {
             authRoutes(loginUseCase, refreshTokenUseCase, logoutUseCase)
             userRoutes(getUsersUseCase, updateRoleUseCase)
+            templateRoutes(getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase)
         }
     }.start(wait = true)
 }

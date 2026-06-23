@@ -18,9 +18,11 @@ class UserManagementRepositoryImpl : UserManagementRepository {
                 .orderBy(UserTable.id)
                 .map { row ->
                     UserEntry(
-                        id    = row[UserTable.id],
-                        email = row[UserTable.email],
-                        role  = row[UserTable.role]
+                        id        = row[UserTable.id],
+                        email     = row[UserTable.email],
+                        role      = row[UserTable.role],
+                        firstName = row[UserTable.firstName],
+                        lastName  = row[UserTable.lastName]
                     )
                 }
         }
@@ -33,4 +35,14 @@ class UserManagementRepositoryImpl : UserManagementRepository {
             } > 0
         }
     }
+
+    override suspend fun updateProfile(userId: Int, firstName: String?, lastName: String?): Boolean =
+        withContext(Dispatchers.IO) {
+            transaction {
+                UserTable.update({ UserTable.id eq userId }) {
+                    it[UserTable.firstName] = firstName?.takeIf(String::isNotBlank)
+                    it[UserTable.lastName]  = lastName?.takeIf(String::isNotBlank)
+                } > 0
+            }
+        }
 }

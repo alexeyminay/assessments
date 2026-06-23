@@ -326,7 +326,75 @@ body {
   font-size: 0.75rem;
   color: #9ca3af;
   font-style: italic;
+  flex-shrink: 0;
 }
+
+.user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.role-badge-inline {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.role-admin { background: #ede9fe; color: #6d42c4; }
+.role-user  { background: #f0f0f0; color: #555; }
+
+.user-edit-btn {
+  padding: 0.3125rem 0.75rem;
+  background: transparent;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.user-edit-btn:hover {
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.user-modal-email {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.user-modal-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  outline: none;
+  background: #fff;
+  color: #111111;
+  transition: border-color 0.15s;
+}
+
+.user-modal-input:focus { border-color: #111111; }
+.user-modal-input:disabled { opacity: 0.5; background: #f9fafb; }
 
 /* ── Page header row ───────────────────────────────────── */
 .page-header {

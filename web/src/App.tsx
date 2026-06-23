@@ -14,6 +14,7 @@ import { UsersPage } from './users/presentation/UsersPage'
 import { HttpUserRepository } from './users/data/HttpUserRepository'
 import { GetUsersUseCase } from './users/domain/GetUsersUseCase'
 import { UpdateRoleUseCase } from './users/domain/UpdateRoleUseCase'
+import { UpdateProfileUseCase } from './users/domain/UpdateProfileUseCase'
 import { HttpTemplateRepository } from './templates/data/HttpTemplateRepository'
 import { GetTemplatesUseCase } from './templates/domain/GetTemplatesUseCase'
 import { ImportTemplateUseCase } from './templates/domain/ImportTemplateUseCase'
@@ -36,6 +37,7 @@ const authFetch = new AuthFetch(tokenStorage)
 const userRepo = new HttpUserRepository(authFetch)
 const getUsersUseCase = new GetUsersUseCase(userRepo)
 const updateRoleUseCase = new UpdateRoleUseCase(userRepo)
+const updateProfileUseCase = new UpdateProfileUseCase(userRepo)
 
 const templateRepo = new HttpTemplateRepository(authFetch)
 const getTemplatesUseCase = new GetTemplatesUseCase(templateRepo)
@@ -131,7 +133,13 @@ function App() {
     window.history.replaceState({}, '', '/dashboard')
   }
 
-  if (!isAuthenticated) return <LoginPage onLogin={login} />
+  const handleLogin = async (credentials: Parameters<typeof login>[0]) => {
+    await login(credentials)
+    setScreen('dashboard')
+    window.history.replaceState({}, '', SCREEN_PATHS['dashboard'])
+  }
+
+  if (!isAuthenticated) return <LoginPage onLogin={handleLogin} />
 
   const currentUserId = parseCurrentUserId()
 
@@ -176,6 +184,7 @@ function App() {
           <UsersPage
             getUsersUseCase={getUsersUseCase}
             updateRoleUseCase={updateRoleUseCase}
+            updateProfileUseCase={updateProfileUseCase}
             currentUserId={currentUserId}
           />
         ) : screen === 'templates' && viewingTemplateId !== null ? (

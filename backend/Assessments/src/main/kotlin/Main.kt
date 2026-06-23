@@ -17,6 +17,7 @@ import org.example.auth.presentation.authRoutes
 import org.example.users.data.UserManagementRepositoryImpl
 import org.example.users.domain.GetUsersUseCase
 import org.example.users.domain.UpdateRoleUseCase
+import org.example.users.domain.UpdateProfileUseCase
 import org.example.users.presentation.userRoutes
 import org.example.templates.data.TemplateRepositoryImpl
 import org.example.templates.domain.DeleteTemplateUseCase
@@ -41,6 +42,7 @@ fun main() {
     val userManagementRepository = UserManagementRepositoryImpl()
     val getUsersUseCase = GetUsersUseCase(userManagementRepository)
     val updateRoleUseCase = UpdateRoleUseCase(userManagementRepository)
+    val updateProfileUseCase = UpdateProfileUseCase(userManagementRepository)
 
     val templateRepository = TemplateRepositoryImpl()
     val getTemplatesUseCase = GetTemplatesUseCase(templateRepository)
@@ -60,7 +62,7 @@ fun main() {
         install(ContentNegotiation) { json() }
         routing {
             authRoutes(loginUseCase, refreshTokenUseCase, logoutUseCase)
-            userRoutes(getUsersUseCase, updateRoleUseCase)
+            userRoutes(getUsersUseCase, updateRoleUseCase, updateProfileUseCase)
             templateRoutes(getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase, getTemplateDetailUseCase)
             assessmentRoutes(
                 createAssessmentUseCase,

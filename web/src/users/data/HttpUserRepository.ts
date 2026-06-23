@@ -24,4 +24,16 @@ export class HttpUserRepository implements UserRepository {
       throw new Error(data.error ?? 'Не удалось изменить роль')
     }
   }
+
+  async updateProfile(userId: number, firstName: string, lastName: string): Promise<void> {
+    const res = await this.authFetch.fetch(`${BASE}/users/${userId}/profile`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ firstName, lastName }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.error ?? 'Не удалось сохранить профиль')
+    }
+  }
 }

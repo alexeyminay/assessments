@@ -33,7 +33,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET:  ${JWT_SECRET}
     ports:
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8081:8080"
     ulimits:
       nofile:
         soft: 65536

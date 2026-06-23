@@ -13,8 +13,3 @@ CREATE TABLE IF NOT EXISTS tokens (
     expires_at  VARCHAR(50)  NOT NULL,
     created_at  VARCHAR(50)  NOT NULL
 );
-
--- First admin user: aminay@alfabank.ru
-INSERT INTO users (email, password_hash, role)
-VALUES ('aminay@alfabank.ru', crypt('REMOVED_FROM_HISTORY', gen_salt('bf', 10)), 'admin')
-ON CONFLICT (email) DO NOTHING;

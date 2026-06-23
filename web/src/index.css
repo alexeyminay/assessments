@@ -606,7 +606,7 @@ body {
 
 /* ── Sidebar ────────────────────────────────────────────── */
 .viewer-sidebar {
-  width: 300px;
+  width: 330px;
   flex-shrink: 0;
   border-right: 1px solid #e5e7eb;
   background: #fafafa;
@@ -743,10 +743,10 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 0.875rem;
-  padding: 1.0625rem 1.125rem;
+  padding: 1.25rem 1.375rem;
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .knowledge-checkbox {

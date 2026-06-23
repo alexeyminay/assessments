@@ -5,7 +5,6 @@ on:
     branches: [main]
 
 env:
-  REGISTRY: ghcr.io
   BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
   FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
 
@@ -65,12 +64,16 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e
-            cd /opt/assessments/infra
+            cd /opt/assessments
 
-            sed -i 's|BACKEND_IMAGE=.*|BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }}|' .env
-            sed -i 's|FRONTEND_IMAGE=.*|FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }}|' .env
+            git pull origin main
 
-            echo ${{ secrets.GHCR_PAT }} | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            docker compose -f infra/docker-compose.prod.yml --env-file infra/.env pull
+
+            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
+            FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            docker compose -f infra/docker-compose.prod.yml --env-file infra/.env up -d --remove-orphans
+
             docker image prune -f

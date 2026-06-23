@@ -699,7 +699,7 @@ body {
   flex-direction: column;
   gap: 1rem;
   width: 100%;
-  max-width: 860px;
+  max-width: 1032px;
 }
 
 .skill-content-header {

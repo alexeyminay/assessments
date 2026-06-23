@@ -62,7 +62,8 @@ jobs:
           script: |
             set -e
             cd /opt/assessments
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             export BACKEND_IMAGE="ghcr.io/${{ github.repository }}/backend:${{ github.sha }}"
             export FRONTEND_IMAGE="ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}"
             docker compose -f infra/docker-compose.prod.yml --env-file infra/.env pull

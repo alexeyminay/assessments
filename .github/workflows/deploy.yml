@@ -4,10 +4,6 @@ on:
   push:
     branches: [main]
 
-env:
-  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
-
 jobs:
   build-backend:
     runs-on: ubuntu-latest
@@ -28,8 +24,8 @@ jobs:
           context: backend/Assessments
           push: true
           tags: |
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-            ${{ env.BACKEND_IMAGE }}:latest
+            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/backend:latest
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -50,8 +46,8 @@ jobs:
           context: web
           push: true
           tags: |
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-            ${{ env.FRONTEND_IMAGE }}:latest
+            ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/frontend:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,18 +58,13 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: BACKEND_IMAGE,FRONTEND_IMAGE
           script: |
             set -e
             cd /opt/assessments
-
             git pull origin main
-
-            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
-            FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
+            export BACKEND_IMAGE="ghcr.io/${{ github.repository }}/backend:${{ github.sha }}"
+            export FRONTEND_IMAGE="ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}"
             docker compose -f infra/docker-compose.prod.yml --env-file infra/.env pull
-
-            BACKEND_IMAGE=${{ env.BACKEND_IMAGE }}:${{ github.sha }} \
-            FRONTEND_IMAGE=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} \
             docker compose -f infra/docker-compose.prod.yml --env-file infra/.env up -d --remove-orphans
-
             docker image prune -f

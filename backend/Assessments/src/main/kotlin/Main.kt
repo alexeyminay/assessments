@@ -20,6 +20,7 @@ import org.example.users.domain.UpdateRoleUseCase
 import org.example.users.presentation.userRoutes
 import org.example.templates.data.TemplateRepositoryImpl
 import org.example.templates.domain.DeleteTemplateUseCase
+import org.example.templates.domain.GetTemplateDetailUseCase
 import org.example.templates.domain.GetTemplatesUseCase
 import org.example.templates.domain.ImportTemplateUseCase
 import org.example.templates.presentation.templateRoutes
@@ -42,13 +43,14 @@ fun main() {
     val getTemplatesUseCase = GetTemplatesUseCase(templateRepository)
     val importTemplateUseCase = ImportTemplateUseCase(templateRepository)
     val deleteTemplateUseCase = DeleteTemplateUseCase(templateRepository)
+    val getTemplateDetailUseCase = GetTemplateDetailUseCase(templateRepository)
 
     embeddedServer(CIO, port = 8080) {
         install(ContentNegotiation) { json() }
         routing {
             authRoutes(loginUseCase, refreshTokenUseCase, logoutUseCase)
             userRoutes(getUsersUseCase, updateRoleUseCase)
-            templateRoutes(getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase)
+            templateRoutes(getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase, getTemplateDetailUseCase)
         }
     }.start(wait = true)
 }

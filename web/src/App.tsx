@@ -7,9 +7,10 @@ import { LogoutUseCase } from './auth/domain/LogoutUseCase'
 import { LoginPage } from './auth/presentation/LoginPage'
 import { useAuth } from './auth/presentation/useAuth'
 import { NavBar } from './navigation/NavBar'
-import { type Screen, SCREEN_PATHS, pathToScreen } from './navigation/types'
+import { type Screen, SCREEN_PATHS, pathToScreen, pathToTemplateId } from './navigation/types'
 import { DashboardPage } from './dashboard/presentation/DashboardPage'
 import { TemplatesPage } from './templates/presentation/TemplatesPage'
+import { TemplateViewerPage } from './templates/presentation/TemplateViewerPage'
 import { UsersPage } from './users/presentation/UsersPage'
 import { HttpUserRepository } from './users/data/HttpUserRepository'
 import { GetUsersUseCase } from './users/domain/GetUsersUseCase'
@@ -18,6 +19,7 @@ import { HttpTemplateRepository } from './templates/data/HttpTemplateRepository'
 import { GetTemplatesUseCase } from './templates/domain/GetTemplatesUseCase'
 import { ImportTemplateUseCase } from './templates/domain/ImportTemplateUseCase'
 import { DeleteTemplateUseCase } from './templates/domain/DeleteTemplateUseCase'
+import { GetTemplateDetailUseCase } from './templates/domain/GetTemplateDetailUseCase'
 
 const tokenStorage = new LocalStorageTokenStorage()
 const authRepo = new HttpAuthRepository()
@@ -33,6 +35,7 @@ const templateRepo = new HttpTemplateRepository(authFetch)
 const getTemplatesUseCase = new GetTemplatesUseCase(templateRepo)
 const importTemplateUseCase = new ImportTemplateUseCase(templateRepo)
 const deleteTemplateUseCase = new DeleteTemplateUseCase(templateRepo)
+const getTemplateDetailUseCase = new GetTemplateDetailUseCase(templateRepo)
 
 function parseCurrentUserId(): number | null {
   const token = tokenStorage.getAccessToken()
@@ -53,19 +56,25 @@ function App() {
   const [screen, setScreen] = useState<Screen>(
     () => pathToScreen(window.location.pathname) ?? 'dashboard'
   )
+  const [viewingTemplateId, setViewingTemplateId] = useState<number | null>(
+    () => pathToTemplateId(window.location.pathname)
+  )
 
   useEffect(() => {
     authFetch.onUnauthenticated = () => forceLogout()
   }, [forceLogout])
 
   useEffect(() => {
-    const onPop = () => setScreen(pathToScreen(window.location.pathname) ?? 'dashboard')
+    const onPop = () => {
+      setScreen(pathToScreen(window.location.pathname) ?? 'dashboard')
+      setViewingTemplateId(pathToTemplateId(window.location.pathname))
+    }
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !viewingTemplateId) {
       window.history.replaceState({}, '', SCREEN_PATHS[screen])
     }
   }, [isAuthenticated])
@@ -73,6 +82,17 @@ function App() {
   const handleScreenChange = (s: Screen) => {
     window.history.pushState({}, '', SCREEN_PATHS[s])
     setScreen(s)
+    setViewingTemplateId(null)
+  }
+
+  const handleViewTemplate = (id: number) => {
+    window.history.pushState({}, '', `/templates/${id}`)
+    setViewingTemplateId(id)
+  }
+
+  const handleBackFromViewer = () => {
+    window.history.pushState({}, '', '/templates')
+    setViewingTemplateId(null)
   }
 
   const handleLogout = async () => {
@@ -103,12 +123,26 @@ function App() {
       </header>
       <main className="app-main">
         {screen === 'dashboard' && <DashboardPage />}
-        {screen === 'users'     && <UsersPage getUsersUseCase={getUsersUseCase} updateRoleUseCase={updateRoleUseCase} currentUserId={currentUserId} />}
-        {screen === 'templates' && (
+        {screen === 'users' && (
+          <UsersPage
+            getUsersUseCase={getUsersUseCase}
+            updateRoleUseCase={updateRoleUseCase}
+            currentUserId={currentUserId}
+          />
+        )}
+        {screen === 'templates' && viewingTemplateId !== null && (
+          <TemplateViewerPage
+            templateId={viewingTemplateId}
+            getTemplateDetailUseCase={getTemplateDetailUseCase}
+            onBack={handleBackFromViewer}
+          />
+        )}
+        {screen === 'templates' && viewingTemplateId === null && (
           <TemplatesPage
             getTemplatesUseCase={getTemplatesUseCase}
             importTemplateUseCase={importTemplateUseCase}
             deleteTemplateUseCase={deleteTemplateUseCase}
+            onView={handleViewTemplate}
           />
         )}
       </main>

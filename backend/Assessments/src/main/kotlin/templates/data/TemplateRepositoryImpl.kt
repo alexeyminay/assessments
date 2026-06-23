@@ -78,6 +78,63 @@ class TemplateRepositoryImpl : TemplateRepository {
             }
         }
 
+    override suspend fun getById(id: Int): TemplateDetailDto? =
+        withContext(Dispatchers.IO) {
+            transaction {
+                val template = AssessmentTemplatesTable
+                    .selectAll().where { AssessmentTemplatesTable.id eq id }
+                    .singleOrNull() ?: return@transaction null
+
+                val skillGroups = SkillGroupsTable
+                    .selectAll().where { SkillGroupsTable.templateId eq id }
+                    .orderBy(SkillGroupsTable.position)
+                    .map { groupRow ->
+                        val gId = groupRow[SkillGroupsTable.id]
+
+                        val skills = SkillsTable
+                            .selectAll().where { SkillsTable.groupId eq gId }
+                            .orderBy(SkillsTable.position)
+                            .map { skillRow ->
+                                val sId = skillRow[SkillsTable.id]
+
+                                val subgroups = KnowledgeSubgroupsTable
+                                    .selectAll().where { KnowledgeSubgroupsTable.skillId eq sId }
+                                    .orderBy(KnowledgeSubgroupsTable.position)
+                                    .map { sgRow ->
+                                        val sgId = sgRow[KnowledgeSubgroupsTable.id]
+
+                                        val items = KnowledgeItemsTable
+                                            .selectAll().where { KnowledgeItemsTable.subgroupId eq sgId }
+                                            .orderBy(KnowledgeItemsTable.position)
+                                            .map { item ->
+                                                KnowledgeItemDto(
+                                                    id = item[KnowledgeItemsTable.id],
+                                                    knowledge = item[KnowledgeItemsTable.knowledge],
+                                                    description = item[KnowledgeItemsTable.description],
+                                                    gradeLevel = item[KnowledgeItemsTable.gradeLevel],
+                                                    scorePoints = item[KnowledgeItemsTable.scorePoints],
+                                                    mandatory = item[KnowledgeItemsTable.mandatory],
+                                                    knowledgeType = item[KnowledgeItemsTable.knowledgeType],
+                                                )
+                                            }
+
+                                        SubgroupDto(sgId, sgRow[KnowledgeSubgroupsTable.name], items)
+                                    }
+
+                                SkillDto(sId, skillRow[SkillsTable.name], subgroups)
+                            }
+
+                        SkillGroupDto(gId, groupRow[SkillGroupsTable.name], skills)
+                    }
+
+                TemplateDetailDto(
+                    id = template[AssessmentTemplatesTable.id],
+                    name = template[AssessmentTemplatesTable.name],
+                    skillGroups = skillGroups,
+                )
+            }
+        }
+
     override suspend fun delete(id: Int): Boolean =
         withContext(Dispatchers.IO) {
             transaction {

@@ -9,9 +9,10 @@ interface Props {
   getTemplatesUseCase: GetTemplatesUseCase
   importTemplateUseCase: ImportTemplateUseCase
   deleteTemplateUseCase: DeleteTemplateUseCase
+  onView: (id: number) => void
 }
 
-export function TemplatesPage({ getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase }: Props) {
+export function TemplatesPage({ getTemplatesUseCase, importTemplateUseCase, deleteTemplateUseCase, onView }: Props) {
   const [templates, setTemplates] = useState<AssessmentTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -55,13 +56,14 @@ export function TemplatesPage({ getTemplatesUseCase, importTemplateUseCase, dele
       ) : (
         <div className="templates-list">
           {templates.map(t => (
-            <div key={t.id} className="template-row">
+            <div key={t.id} className="template-row" onClick={() => onView(t.id)} role="button" tabIndex={0}
+              onKeyDown={e => e.key === 'Enter' && onView(t.id)}>
               <span className="template-name">{t.name}</span>
               <span className="template-date">{formatDate(t.createdAt)}</span>
               <button
                 className="template-delete-btn"
                 disabled={deletingId === t.id}
-                onClick={() => handleDelete(t.id)}
+                onClick={e => { e.stopPropagation(); handleDelete(t.id) }}
               >
                 Удалить
               </button>

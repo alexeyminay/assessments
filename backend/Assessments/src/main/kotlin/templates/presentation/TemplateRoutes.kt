@@ -13,6 +13,7 @@ import org.example.auth.presentation.requireAdmin
 import org.example.templates.data.AssessmentTemplateParser
 import org.example.templates.data.XlsxParser
 import org.example.templates.domain.DeleteTemplateUseCase
+import org.example.templates.domain.GetTemplateDetailUseCase
 import org.example.templates.domain.GetTemplatesUseCase
 import org.example.templates.domain.ImportResult
 import org.example.templates.domain.ImportTemplateUseCase
@@ -24,6 +25,7 @@ fun Route.templateRoutes(
     getTemplatesUseCase: GetTemplatesUseCase,
     importTemplateUseCase: ImportTemplateUseCase,
     deleteTemplateUseCase: DeleteTemplateUseCase,
+    getTemplateDetailUseCase: GetTemplateDetailUseCase,
 ) {
     route("/templates") {
 
@@ -76,6 +78,15 @@ fun Route.templateRoutes(
 
             val result = importTemplateUseCase.execute(templateName, parsed) as ImportResult.Success
             call.respond(HttpStatusCode.Created, ImportResponse(result.templateId, templateName, result.itemCount))
+        }
+
+        get("/{id}") {
+            call.requireAdmin() ?: return@get
+            val id = call.parameters["id"]?.toIntOrNull()
+                ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный id"))
+            val detail = getTemplateDetailUseCase.execute(id)
+                ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("Шаблон не найден"))
+            call.respond(detail)
         }
 
         delete("/{id}") {

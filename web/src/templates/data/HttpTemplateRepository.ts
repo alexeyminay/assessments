@@ -1,6 +1,6 @@
 import type { AuthFetch } from '../../auth/data/AuthFetch'
 import type { TemplateRepository } from '../domain/TemplateRepository'
-import type { AssessmentTemplate, ImportedTemplate } from '../domain/AssessmentTemplate'
+import type { AssessmentTemplate, ImportedTemplate, TemplateDetailDto } from '../domain/AssessmentTemplate'
 
 const BASE = '/api/templates'
 
@@ -10,6 +10,12 @@ export class HttpTemplateRepository implements TemplateRepository {
   async getAll(): Promise<AssessmentTemplate[]> {
     const res = await this.authFetch.fetch(BASE)
     if (!res.ok) throw new Error('Не удалось загрузить шаблоны')
+    return res.json()
+  }
+
+  async getById(id: number): Promise<TemplateDetailDto> {
+    const res = await this.authFetch.fetch(`${BASE}/${id}`)
+    if (!res.ok) throw new Error('Шаблон не найден')
     return res.json()
   }
 

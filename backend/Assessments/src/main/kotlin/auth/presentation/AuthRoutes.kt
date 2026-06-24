@@ -8,9 +8,12 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.example.auth.data.UserTable
 import org.example.auth.domain.LoginUseCase
 import org.example.auth.domain.LogoutUseCase
 import org.example.auth.domain.RefreshTokenUseCase
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.Date
 
 @Serializable
@@ -18,6 +21,9 @@ private data class RefreshRequest(@SerialName("refresh_token") val refreshToken:
 
 @Serializable
 private data class LogoutRequest(@SerialName("refresh_token") val refreshToken: String)
+
+@Serializable
+private data class MeResponse(val email: String, val firstName: String?, val lastName: String?)
 
 fun Route.authRoutes(
     loginUseCase: LoginUseCase,
@@ -61,5 +67,13 @@ fun Route.authRoutes(
         val request = call.receive<LogoutRequest>()
         logoutUseCase.execute(request.refreshToken)
         call.respond(HttpStatusCode.OK)
+    }
+
+    get("/me") {
+        val ctx = call.requireAuth() ?: return@get
+        val row = transaction {
+            UserTable.selectAll().where { UserTable.id eq ctx.userId }.singleOrNull()
+        } ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("Пользователь не найден"))
+        call.respond(MeResponse(row[UserTable.email], row[UserTable.firstName], row[UserTable.lastName]))
     }
 }

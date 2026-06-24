@@ -64,6 +64,18 @@ function parseCurrentUserId(): number | null {
   }
 }
 
+interface MeInfo {
+  email: string
+  firstName: string | null
+  lastName: string | null
+}
+
+async function fetchMe(): Promise<MeInfo> {
+  const res = await authFetch.fetch('/api/me')
+  if (!res.ok) throw new Error('Failed to fetch me')
+  return res.json()
+}
+
 function App() {
   const { isAuthenticated, role, login, logout, forceLogout } = useAuth(
     loginUseCase, logoutUseCase, tokenStorage,
@@ -78,6 +90,7 @@ function App() {
   const [viewingAssessmentId, setViewingAssessmentId] = useState<number | null>(
     () => pathToAssessmentId(window.location.pathname)
   )
+  const [me, setMe] = useState<MeInfo | null>(null)
 
   useEffect(() => {
     authFetch.onUnauthenticated = () => forceLogout()
@@ -94,8 +107,13 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (isAuthenticated && !viewingTemplateId && !viewingAssessmentId) {
-      window.history.replaceState({}, '', SCREEN_PATHS[screen])
+    if (isAuthenticated) {
+      if (!viewingTemplateId && !viewingAssessmentId) {
+        window.history.replaceState({}, '', SCREEN_PATHS[screen])
+      }
+      fetchMe().then(setMe).catch(() => {})
+    } else {
+      setMe(null)
     }
   }, [isAuthenticated])
 
@@ -142,6 +160,9 @@ function App() {
   if (!isAuthenticated) return <LoginPage onLogin={handleLogin} />
 
   const currentUserId = parseCurrentUserId()
+  const displayName = me
+    ? ([me.firstName, me.lastName].filter(Boolean).join(' ') || me.email)
+    : null
 
   return (
     <div className="app">
@@ -152,10 +173,8 @@ function App() {
           <NavBar active={screen} role={role} onChange={handleScreenChange} />
         </div>
         <div className="app-header-right">
-          {role && (
-            <span className="role-badge">
-              {role === 'admin' ? 'Администратор' : 'Пользователь'}
-            </span>
+          {displayName && (
+            <span className="user-display-name">{displayName}</span>
           )}
           <button className="logout-btn" onClick={handleLogout}>Выйти</button>
         </div>

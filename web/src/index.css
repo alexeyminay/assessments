@@ -141,7 +141,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 1.5rem;
-  height: 56px;
+  height: 62px;
   background: #111111;
   color: #fff;
   flex-shrink: 0;
@@ -191,6 +191,16 @@ body {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
   white-space: nowrap;
+}
+
+.user-display-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
 }
 
 .logout-btn {

@@ -24,6 +24,7 @@ data class AssessmentListItem(
     val assessee: UserInfo,
     val status: String,
     val createdAt: String,
+    val completedAt: String?,
     val lockUserEmail: String?,
     val lockExpiresAt: String?,
 )

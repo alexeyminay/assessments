@@ -21,6 +21,34 @@ const TABS: { key: AssessmentTab; label: string }[] = [
   { key: 'mine',   label: 'Мои' },
 ]
 
+function monthKey(iso: string): string {
+  const d = new Date(iso)
+  return `${d.getFullYear()}-${d.getMonth()}`
+}
+
+function monthLabel(iso: string): string {
+  const label = new Date(iso).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+function groupByMonth(items: AssessmentListItem[]) {
+  const groups: { key: string; label: string; items: AssessmentListItem[] }[] = []
+  for (const item of items) {
+    const key = monthKey(item.createdAt)
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) {
+      last.items.push(item)
+    } else {
+      groups.push({ key, label: monthLabel(item.createdAt), items: [item] })
+    }
+  }
+  return groups
+}
+
 export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, getTemplatesUseCase, role, onView }: Props) {
   const [tab, setTab] = useState<AssessmentTab>('all')
   const [items, setItems] = useState<AssessmentListItem[]>([])
@@ -45,8 +73,6 @@ export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, get
 
   useEffect(() => { load(tab) }, [tab])
 
-  const handleTabChange = (t: AssessmentTab) => { setTab(t); }
-
   const handleCreated = (_id: number) => {
     setShowAssign(false)
     load(tab)
@@ -56,6 +82,8 @@ export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, get
     const n = counts[t]
     return n > 0 ? ` (${n})` : ''
   }
+
+  const groups = groupByMonth(items)
 
   return (
     <div className="page dashboard-page">
@@ -73,7 +101,7 @@ export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, get
           <button
             key={key}
             className={`tab-btn${tab === key ? ' active' : ''}`}
-            onClick={() => handleTabChange(key)}
+            onClick={() => setTab(key)}
           >
             {label}{countFor(key)}
           </button>
@@ -87,22 +115,37 @@ export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, get
       ) : items.length === 0 ? (
         <p className="page-placeholder">Нет ассессментов</p>
       ) : (
-        <div className="assessment-list">
-          {items.map(item => (
-            <div key={item.id} className="assessment-card" onClick={() => onView(item.id)}>
-              <div className="assessment-card-top">
-                <span className="assessment-template-name">{item.templateName}</span>
-                <span className={`status-badge status-${item.status}`}>
-                  {STATUS_LABELS[item.status]}
-                </span>
-              </div>
-              <div className="assessment-card-bottom">
-                <span className="assessment-assessee">{displayUser(item.assessee)}</span>
-                {item.lockUserEmail && (
-                  <span className="assessment-lock-hint" title={`Блокировка до ${item.lockExpiresAt}`}>
-                    🔒 {item.lockUserEmail}
-                  </span>
-                )}
+        <div className="assessment-groups">
+          {groups.map(group => (
+            <div key={group.key} className="assessment-month-group">
+              <h3 className="assessment-month-label">{group.label}</h3>
+              <div className="assessment-list">
+                {group.items.map(item => (
+                  <div key={item.id} className="assessment-card" onClick={() => onView(item.id)}>
+                    <div className="assessment-card-top">
+                      <span className="assessment-template-name">{item.templateName}</span>
+                      <span className={`status-badge status-${item.status}`}>
+                        {STATUS_LABELS[item.status]}
+                      </span>
+                    </div>
+                    <div className="assessment-card-middle">
+                      <span className="assessment-assessee">{displayUser(item.assessee)}</span>
+                    </div>
+                    <div className="assessment-card-bottom">
+                      <span className="assessment-date">Назначен: {formatDate(item.createdAt)}</span>
+                      {item.completedAt && (
+                        <span className="assessment-date assessment-date-completed">
+                          Завершён: {formatDate(item.completedAt)}
+                        </span>
+                      )}
+                      {item.lockUserEmail && (
+                        <span className="assessment-lock-hint" title={`Блокировка до ${item.lockExpiresAt}`}>
+                          🔒 {item.lockUserEmail}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ))}

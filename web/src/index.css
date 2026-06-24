@@ -986,10 +986,18 @@ body {
   color: #111111;
 }
 
+.assessment-card-middle {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+}
+
 .assessment-card-bottom {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .assessment-assessee {
@@ -997,9 +1005,41 @@ body {
   color: #6b7280;
 }
 
+.assessment-date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.assessment-date-completed {
+  color: #6b7280;
+}
+
 .assessment-lock-hint {
   font-size: 0.75rem;
   color: #9ca3af;
+}
+
+/* ── Dashboard month groups ─────────────────────────────── */
+.assessment-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.assessment-month-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.assessment-month-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9ca3af;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 /* ── Status badges ──────────────────────────────────────── */

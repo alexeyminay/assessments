@@ -70,6 +70,7 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                         assessee      = UserInfo(row[AssessmentsTable.assesseeId], row[UserTable.email], row[UserTable.firstName], row[UserTable.lastName]),
                         status        = row[AssessmentsTable.status],
                         createdAt     = row[AssessmentsTable.createdAt],
+                        completedAt   = row[AssessmentsTable.completedAt],
                         lockUserEmail = lockEmail(row[AssessmentsTable.lockUserId]),
                         lockExpiresAt = row[AssessmentsTable.lockExpiresAt],
                     )

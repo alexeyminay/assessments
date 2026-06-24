@@ -29,6 +29,7 @@ export interface AssessmentListItem {
   assessee: UserInfo
   status: AssessmentStatus
   createdAt: string
+  completedAt: string | null
   lockUserEmail: string | null
   lockExpiresAt: string | null
 }

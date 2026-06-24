@@ -1,7 +1,7 @@
 import type { AssessmentDetail } from '../domain/types'
 import type { TemplateDetailDto } from '../../templates/domain/AssessmentTemplate'
 import { calcGroupResult, type GroupResult, type SkillResult } from '../domain/scoring'
-import { RadarChart } from './RadarChart'
+import { RadarChart, RADAR_COLORS, type RadarColor } from './RadarChart'
 
 interface Props {
   detail: AssessmentDetail
@@ -33,7 +33,7 @@ function ProgressLabel({ result }: { result: SkillResult | GroupResult }) {
   return null
 }
 
-function GroupSection({ group }: { group: GroupResult }) {
+function GroupSection({ group, color }: { group: GroupResult; color: RadarColor }) {
   const hasMain = group.mainSkills.length > 0
   const hasAdditional = group.additionalSkills.length > 0
 
@@ -56,6 +56,7 @@ function GroupSection({ group }: { group: GroupResult }) {
               <RadarChart
                 labels={group.mainSkills.map(s => s.skillName)}
                 values={group.mainSkills.map(s => s.normalizedScore)}
+                color={color}
               />
             </div>
           )}
@@ -101,8 +102,12 @@ export function AssessmentResultView({ detail, snapshot }: Props) {
         </div>
       )}
 
-      {groups.map(group => (
-        <GroupSection key={group.groupId} group={group} />
+      {groups.map((group, idx) => (
+        <GroupSection
+          key={group.groupId}
+          group={group}
+          color={RADAR_COLORS[idx % RADAR_COLORS.length]}
+        />
       ))}
     </div>
   )

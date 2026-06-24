@@ -1383,7 +1383,7 @@ body {
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .result-group-header {
@@ -1414,12 +1414,14 @@ body {
 .result-group-body {
   display: flex;
   align-items: flex-start;
-  gap: 1.5rem;
-  padding: 1.25rem 1.25rem 0;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0;
+  overflow: visible;
 }
 
 .result-radar-wrap {
   flex-shrink: 0;
+  width: 380px;
 }
 
 .result-skills-table {

@@ -3,6 +3,7 @@ import type { GetAssessmentDetailUseCase, AssessmentTransitionUseCase, Assessmen
 import type { AssessmentDetail, CommentDto } from '../domain/types'
 import { STATUS_LABELS, displayUser } from '../domain/types'
 import type { TemplateDetailDto, SkillDto } from '../../templates/domain/AssessmentTemplate'
+import { AssessmentResultView } from './AssessmentResultView'
 
 interface Props {
   assessmentId: number
@@ -38,6 +39,7 @@ export function AssessmentViewerPage({
 
   const [showCompletePanel, setShowCompletePanel] = useState(false)
   const [finalComment, setFinalComment] = useState('')
+  const [view, setView] = useState<'results' | 'questions'>('questions')
 
   const loadDetail = useCallback(async () => {
     try {
@@ -59,6 +61,10 @@ export function AssessmentViewerPage({
   }, [assessmentId])
 
   useEffect(() => { loadDetail() }, [loadDetail])
+
+  useEffect(() => {
+    if (detail?.status === 'completed') setView('results')
+  }, [detail?.status])
 
   const isAssessee   = detail?.assessee.id === currentUserId
   const isReviewer   = detail?.reviewers.some(r => r.id === currentUserId) ?? false
@@ -138,10 +144,30 @@ export function AssessmentViewerPage({
         <button className="viewer-back-btn" onClick={onBack}>← Назад</button>
         <span className="viewer-title">{detail.templateName}</span>
         <span className={`status-badge status-${detail.status}`}>{STATUS_LABELS[detail.status]}</span>
+        {detail.status === 'completed' && (
+          <div className="viewer-view-tabs">
+            <button
+              className={`viewer-view-tab${view === 'results' ? ' active' : ''}`}
+              onClick={() => setView('results')}
+            >
+              Результаты
+            </button>
+            <button
+              className={`viewer-view-tab${view === 'questions' ? ' active' : ''}`}
+              onClick={() => setView('questions')}
+            >
+              Вопросы
+            </button>
+          </div>
+        )}
       </div>
 
+      {view === 'results' && detail.status === 'completed' && snapshot ? (
+        <AssessmentResultView detail={detail} snapshot={snapshot} />
+      ) : null}
+
       {/* action panel */}
-      <div className="assessment-action-panel">
+      {view === 'questions' && <div className="assessment-action-panel">
         <div className="action-panel-info">
           <span className="action-info-label">Проходит:</span>
           <span className="action-info-value">{displayUser(detail.assessee)}</span>
@@ -201,9 +227,9 @@ export function AssessmentViewerPage({
           </div>
         )}
         {actionError && <p className="page-error action-error">{actionError}</p>}
-      </div>
+      </div>}
 
-      <div className="viewer-body">
+      {view === 'questions' && <div className="viewer-body">
         <aside className="viewer-sidebar">
           {snapshot.skillGroups.map(group => (
             <div key={group.id} className="sidebar-group">
@@ -247,7 +273,7 @@ export function AssessmentViewerPage({
             <p className="page-placeholder">Выберите навык</p>
           )}
         </main>
-      </div>
+      </div>}
     </div>
   )
 }

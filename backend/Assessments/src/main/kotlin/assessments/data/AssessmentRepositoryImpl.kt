@@ -67,7 +67,7 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                     AssessmentListItem(
                         id            = row[AssessmentsTable.id],
                         templateName  = row[AssessmentsTable.templateName],
-                        assessee      = UserInfo(row[AssessmentsTable.assesseeId], row[UserTable.email]),
+                        assessee      = UserInfo(row[AssessmentsTable.assesseeId], row[UserTable.email], row[UserTable.firstName], row[UserTable.lastName]),
                         status        = row[AssessmentsTable.status],
                         createdAt     = row[AssessmentsTable.createdAt],
                         lockUserEmail = lockEmail(row[AssessmentsTable.lockUserId]),
@@ -109,7 +109,7 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                 reviewers       = AssessmentReviewersTable
                     .join(UserTable, JoinType.INNER, AssessmentReviewersTable.userId, UserTable.id)
                     .selectAll().where { AssessmentReviewersTable.assessmentId eq id }
-                    .map { UserInfo(it[UserTable.id], it[UserTable.email]) },
+                    .map { UserInfo(it[UserTable.id], it[UserTable.email], it[UserTable.firstName], it[UserTable.lastName]) },
                 status          = row[AssessmentsTable.status],
                 snapshotJson    = row[AssessmentsTable.snapshot],
                 answers         = AssessmentAnswersTable.selectAll()
@@ -323,7 +323,7 @@ class AssessmentRepositoryImpl : AssessmentRepository {
 
     private fun userInfo(id: Int): UserInfo =
         UserTable.selectAll().where { UserTable.id eq id }
-            .single().let { UserInfo(it[UserTable.id], it[UserTable.email]) }
+            .single().let { UserInfo(it[UserTable.id], it[UserTable.email], it[UserTable.firstName], it[UserTable.lastName]) }
 
     private fun lockEmail(lockUserId: Int?): String? =
         lockUserId?.let { lid ->

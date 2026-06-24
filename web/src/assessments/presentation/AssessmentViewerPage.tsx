@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { GetAssessmentDetailUseCase, AssessmentTransitionUseCase, AssessmentLockUseCase, UpdateAssessmentUseCase } from '../domain/useCases'
 import type { AssessmentDetail, CommentDto } from '../domain/types'
-import { STATUS_LABELS } from '../domain/types'
+import { STATUS_LABELS, displayUser } from '../domain/types'
 import type { TemplateDetailDto, SkillDto } from '../../templates/domain/AssessmentTemplate'
 
 interface Props {
@@ -144,7 +144,9 @@ export function AssessmentViewerPage({
       <div className="assessment-action-panel">
         <div className="action-panel-info">
           <span className="action-info-label">Проходит:</span>
-          <span className="action-info-value">{detail.assessee.email}</span>
+          <span className="action-info-value">{displayUser(detail.assessee)}</span>
+          <span className="action-info-label">Проверяющие:</span>
+          <span className="action-info-value">{detail.reviewers.map(displayUser).join(', ')}</span>
           {detail.lockUserEmail && (
             <span className="action-lock-badge" title={`до ${detail.lockExpiresAt}`}>
               🔒 {isMeLocked ? 'вы редактируете' : detail.lockUserEmail}

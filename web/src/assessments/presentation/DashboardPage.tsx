@@ -3,7 +3,7 @@ import type { ListAssessmentsUseCase, CreateAssessmentUseCase } from '../domain/
 import type { GetUsersUseCase } from '../../users/domain/GetUsersUseCase'
 import type { GetTemplatesUseCase } from '../../templates/domain/GetTemplatesUseCase'
 import type { AssessmentListItem, AssessmentTabCounts, AssessmentTab } from '../domain/types'
-import { STATUS_LABELS } from '../domain/types'
+import { STATUS_LABELS, displayUser } from '../domain/types'
 import { AssignModal } from './AssignModal'
 
 interface Props {
@@ -97,7 +97,7 @@ export function DashboardPage({ listUseCase, createUseCase, getUsersUseCase, get
                 </span>
               </div>
               <div className="assessment-card-bottom">
-                <span className="assessment-assessee">{item.assessee.email}</span>
+                <span className="assessment-assessee">{displayUser(item.assessee)}</span>
                 {item.lockUserEmail && (
                   <span className="assessment-lock-hint" title={`Блокировка до ${item.lockExpiresAt}`}>
                     🔒 {item.lockUserEmail}

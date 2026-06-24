@@ -1,6 +1,13 @@
 export interface UserInfo {
   id: number
   email: string
+  firstName: string | null
+  lastName: string | null
+}
+
+export function displayUser(user: UserInfo): string {
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ')
+  return name || user.email
 }
 
 export interface AnswerDto {

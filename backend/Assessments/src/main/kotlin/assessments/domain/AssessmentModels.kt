@@ -3,7 +3,7 @@ package org.example.assessments.domain
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserInfo(val id: Int, val email: String)
+data class UserInfo(val id: Int, val email: String, val firstName: String?, val lastName: String?)
 
 @Serializable
 data class AnswerDto(val itemId: Int, val checked: Boolean)

@@ -4,6 +4,7 @@ import type { AssessmentDetail, CommentDto } from '../domain/types'
 import { STATUS_LABELS, displayUser } from '../domain/types'
 import type { TemplateDetailDto, SkillDto } from '../../templates/domain/AssessmentTemplate'
 import { AssessmentResultView } from './AssessmentResultView'
+import { exportAssessmentToXlsx } from './exportAssessment'
 
 interface Props {
   assessmentId: number
@@ -144,6 +145,13 @@ export function AssessmentViewerPage({
         <button className="viewer-back-btn" onClick={onBack}>← Назад</button>
         <span className="viewer-title">{detail.templateName}</span>
         <span className={`status-badge status-${detail.status}`}>{STATUS_LABELS[detail.status]}</span>
+        <button
+          className="btn-export"
+          onClick={() => exportAssessmentToXlsx(detail, snapshot)}
+          title="Экспорт в Excel"
+        >
+          ↓ xlsx
+        </button>
         {detail.status === 'completed' && (
           <div className="viewer-view-tabs">
             <button

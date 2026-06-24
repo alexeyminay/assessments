@@ -22,13 +22,13 @@ function GradeBadge({ grade }: { grade: string | null }) {
 
 function ProgressLabel({ result }: { result: SkillResult | GroupResult }) {
   if (!result.grade && result.nextGrade) {
-    return <span className="result-progress">0% до {result.nextGrade}</span>
+    return <span className="result-progress">осталось 100% до {result.nextGrade}</span>
   }
   if (result.grade === 'Senior' || (!result.nextGrade && result.grade)) {
     return <span className="result-progress result-progress-max">максимум</span>
   }
   if (result.progressToNext !== null && result.nextGrade) {
-    return <span className="result-progress">{result.progressToNext}% до {result.nextGrade}</span>
+    return <span className="result-progress">осталось {result.progressToNext}% до {result.nextGrade}</span>
   }
   return null
 }

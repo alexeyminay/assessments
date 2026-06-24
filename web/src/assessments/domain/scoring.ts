@@ -66,7 +66,7 @@ function resolveGrade(
     const lo = cur?.threshold ?? 0
     const hi = next.threshold
     progressToNext = hi > lo
-      ? Math.min(100, Math.max(0, Math.round(((score - lo) / (hi - lo)) * 100)))
+      ? Math.min(100, Math.max(0, Math.round(((hi - score) / (hi - lo)) * 100)))
       : null
   }
 

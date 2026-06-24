@@ -94,7 +94,7 @@ export function RadarChart({ labels, values, color }: RadarChartProps) {
         points={angles.map((a, i) => pt(a, R * Math.max(0.02, values[i]))).join(' ')}
         fill={color.fill}
         stroke={color.stroke}
-        strokeWidth="2.5"
+        strokeWidth="1.75"
         strokeLinejoin="round"
       />
 

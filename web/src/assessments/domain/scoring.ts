@@ -108,36 +108,28 @@ export function calcSkillResult(skill: SkillDto, checkedIds: Set<number>): Skill
   }
 }
 
-// Highest grade level that exists among a skill's items, used as the skill's
-// "potential" when building group-level thresholds.
-function maxSkillGrade(skill: SkillDto): string | null {
-  const items = skill.subgroups.flatMap(s => s.items)
-  for (const g of ['Senior', 'Middle', 'Junior', 'Intern']) {
-    if (items.some(i => i.gradeLevel === g)) return g
-  }
-  return null
-}
-
 export function calcGroupResult(group: SkillGroupDto, checkedIds: Set<number>): GroupResult {
   const skillResults     = group.skills.map(s => calcSkillResult(s, checkedIds))
   const mainSkills       = skillResults.filter(s => !s.isAdditional)
   const additionalSkills = skillResults.filter(s =>  s.isAdditional)
 
-  // Each main skill acts like one "item" whose gradeLevel is its max achievable grade.
-  // buildThresholds then tells us what the group needs to reach each grade.
-  const mainSkillDtos = group.skills.filter((_, i) => !skillResults[i].isAdditional)
-  const virtualItems  = mainSkillDtos
-    .map(s => ({ gradeLevel: maxSkillGrade(s) }))
-    .filter(v => v.gradeLevel != null) as Array<{ gradeLevel: string }>
-
-  // Group score = sum of achieved grade weights (skill's grade → its weight, or 0)
+  // Group score = sum of achieved grade weights per main skill (0 if no grade).
   const achievedScore = mainSkills.reduce(
     (sum, s) => sum + (s.grade ? (GRADE_WEIGHTS[s.grade] ?? 0) : 0),
     0,
   )
 
-  const thresholds = buildThresholds(virtualItems)
-  const maxScore   = thresholds.length > 0 ? thresholds[thresholds.length - 1].threshold : 0
+  // Fixed thresholds: N skills × grade weight.
+  // Equivalent to "average skill grade ≥ threshold grade".
+  const n = mainSkills.length
+  const thresholds: GradeThreshold[] = n === 0 ? [] : [
+    { grade: 'Intern', threshold: n * 0.5 },
+    { grade: 'Junior', threshold: n * 1.0 },
+    { grade: 'Middle', threshold: n * 1.5 },
+    { grade: 'Senior', threshold: n * 2.0 },
+  ]
+
+  const maxScore = n * 2.0
   const { grade, nextGrade, progressToNext } = resolveGrade(achievedScore, thresholds)
 
   return { groupId: group.id, groupName: group.name, mainSkills, additionalSkills, achievedScore, maxScore, grade, nextGrade, progressToNext }

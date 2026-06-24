@@ -1344,6 +1344,60 @@ body {
 }
 
 /* ── Assessment Result View ─────────────────────────────────────── */
+
+.result-info-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.125rem 1.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.result-info-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.result-info-heading {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.01em;
+}
+
+.result-to-questions-btn {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+}
+
+.result-info-grid {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  row-gap: 0.5rem;
+  column-gap: 1rem;
+}
+
+.result-info-label {
+  font-size: 0.8125rem;
+  color: #9ca3af;
+  font-weight: 500;
+  padding-top: 0.0625rem;
+}
+
+.result-info-value {
+  font-size: 0.875rem;
+  color: #111;
+}
+
+.result-info-email {
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
 .result-view {
   flex: 1;
   overflow-y: auto;

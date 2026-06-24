@@ -163,7 +163,7 @@ export function AssessmentViewerPage({
       </div>
 
       {view === 'results' && detail.status === 'completed' && snapshot ? (
-        <AssessmentResultView detail={detail} snapshot={snapshot} />
+        <AssessmentResultView detail={detail} snapshot={snapshot} onSwitchToQuestions={() => setView('questions')} />
       ) : null}
 
       {/* action panel */}

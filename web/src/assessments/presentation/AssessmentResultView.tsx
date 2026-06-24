@@ -1,11 +1,13 @@
 import type { AssessmentDetail } from '../domain/types'
+import { displayUser } from '../domain/types'
 import type { TemplateDetailDto } from '../../templates/domain/AssessmentTemplate'
 import { calcGroupResult, type GroupResult, type SkillResult } from '../domain/scoring'
 import { RadarChart, RADAR_COLORS, type RadarColor } from './RadarChart'
 
 interface Props {
-  detail: AssessmentDetail
-  snapshot: TemplateDetailDto
+  detail:               AssessmentDetail
+  snapshot:             TemplateDetailDto
+  onSwitchToQuestions:  () => void
 }
 
 const GRADE_CLASS: Record<string, string> = {
@@ -34,7 +36,7 @@ function ProgressLabel({ result }: { result: SkillResult | GroupResult }) {
 }
 
 function GroupSection({ group, color }: { group: GroupResult; color: RadarColor }) {
-  const hasMain = group.mainSkills.length > 0
+  const hasMain       = group.mainSkills.length > 0
   const hasAdditional = group.additionalSkills.length > 0
 
   return (
@@ -89,12 +91,71 @@ function GroupSection({ group, color }: { group: GroupResult; color: RadarColor 
   )
 }
 
-export function AssessmentResultView({ detail, snapshot }: Props) {
+function formatDate(iso: string): string {
+  return new Date(iso)
+    .toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+    .replace(' г.', '')
+}
+
+export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: Props) {
   const checkedIds = new Set(detail.answers.filter(a => a.checked).map(a => a.itemId))
-  const groups = snapshot.skillGroups.map(g => calcGroupResult(g, checkedIds))
+  const groups     = snapshot.skillGroups.map(g => calcGroupResult(g, checkedIds))
 
   return (
     <div className="result-view">
+
+      {/* Info card */}
+      <div className="result-info-card">
+        <div className="result-info-top">
+          <span className="result-info-heading">Сводка по ассессменту</span>
+          <button className="btn-secondary result-to-questions-btn" onClick={onSwitchToQuestions}>
+            К вопросам →
+          </button>
+        </div>
+
+        <div className="result-info-grid">
+          <span className="result-info-label">Проходил</span>
+          <span className="result-info-value">
+            {displayUser(detail.assessee)}
+            {(detail.assessee.firstName || detail.assessee.lastName) && (
+              <span className="result-info-email"> · {detail.assessee.email}</span>
+            )}
+          </span>
+
+          <span className="result-info-label">Назначил</span>
+          <span className="result-info-value">{displayUser(detail.assignedBy)}</span>
+
+          {detail.reviewers.length > 0 && <>
+            <span className="result-info-label">Проверяющие</span>
+            <span className="result-info-value">{detail.reviewers.map(displayUser).join(', ')}</span>
+          </>}
+
+          <span className="result-info-label">Назначен</span>
+          <span className="result-info-value">{formatDate(detail.createdAt)}</span>
+
+          {detail.startedAt && <>
+            <span className="result-info-label">Начат</span>
+            <span className="result-info-value">{formatDate(detail.startedAt)}</span>
+          </>}
+
+          {detail.submittedAt && <>
+            <span className="result-info-label">Отправлен</span>
+            <span className="result-info-value">{formatDate(detail.submittedAt)}</span>
+          </>}
+
+          {detail.reviewStartedAt && <>
+            <span className="result-info-label">Проверка начата</span>
+            <span className="result-info-value">{formatDate(detail.reviewStartedAt)}</span>
+          </>}
+
+          {detail.completedAt && <>
+            <span className="result-info-label">Завершён</span>
+            <span className="result-info-value">{formatDate(detail.completedAt)}</span>
+          </>}
+        </div>
+      </div>
+
+      {/* Final comment */}
       {detail.finalComment && (
         <div className="result-final-comment">
           <p className="result-final-comment-label">Итоговый комментарий</p>
@@ -102,6 +163,7 @@ export function AssessmentResultView({ detail, snapshot }: Props) {
         </div>
       )}
 
+      {/* Skill groups */}
       {groups.map((group, idx) => (
         <GroupSection
           key={group.groupId}

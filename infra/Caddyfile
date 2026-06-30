@@ -1,6 +1,9 @@
 {
     email redcitysoft@yandex.ru
-    auto_https disable_redirects
+}
+
+http://assessments.fvds.ru {
+    reverse_proxy web:80
 }
 
 assessments.fvds.ru {

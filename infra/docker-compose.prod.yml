@@ -50,8 +50,6 @@ services:
 
   web:
     image: ${FRONTEND_IMAGE}
-    ports:
-      - "127.0.0.1:3000:80"
     restart: unless-stopped
     logging:
       driver: json-file
@@ -61,5 +59,21 @@ services:
     depends_on:
       - backend
 
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    depends_on:
+      - web
+
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:

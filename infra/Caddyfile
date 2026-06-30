@@ -3,8 +3,5 @@
 }
 
 assessments.fvds.ru {
-    tls {
-        ca https://api.buypass.com/acme/directory
-    }
     reverse_proxy web:80
 }

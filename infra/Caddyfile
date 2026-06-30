@@ -1,3 +1,7 @@
+{
+    email pat52000@outlook.com
+}
+
 assessments.fvds.ru {
     tls {
         ca https://acme.zerossl.com/v2/DV90

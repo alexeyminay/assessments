@@ -1,0 +1,25 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: infra-caddy-1
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - infra_default
+
+networks:
+  infra_default:
+    external: true
+
+volumes:
+  caddy_data:
+    name: infra_caddy_data
+  caddy_config:
+    name: infra_caddy_config

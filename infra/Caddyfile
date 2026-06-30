@@ -1,5 +1,6 @@
 {
     email redcitysoft@yandex.ru
+    auto_https disable_redirects
 }
 
 assessments.fvds.ru {

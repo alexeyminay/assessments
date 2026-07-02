@@ -2,10 +2,6 @@
     email redcitysoft@yandex.ru
 }
 
-http://assessments.fvds.ru {
-    reverse_proxy web:80
-}
-
 assessments.fvds.ru {
     reverse_proxy web:80
 }

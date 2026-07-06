@@ -46,13 +46,13 @@ export function exportAssessmentToXlsx(
   for (const group of groups) {
     for (const skill of group.mainSkills) {
       const prog = skill.progressToNext !== null && skill.nextGrade
-        ? `${skill.progressToNext}% до ${skill.nextGrade}`
+        ? `${skill.progressToNext}% от ${skill.nextGrade}`
         : skill.grade === 'Senior' ? 'максимум' : ''
       rows.push([group.groupName, skill.skillName, skill.grade ?? '—', skill.nextGrade ?? '—', prog])
     }
     if (group.mainSkills.length > 0) {
       const prog = group.progressToNext !== null && group.nextGrade
-        ? `${group.progressToNext}% до ${group.nextGrade}`
+        ? `${group.progressToNext}% от ${group.nextGrade}`
         : group.grade === 'Senior' ? 'максимум' : ''
       rows.push([group.groupName, '(итого по группе)', group.grade ?? '—', group.nextGrade ?? '—', prog])
     }

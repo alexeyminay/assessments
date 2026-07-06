@@ -27,7 +27,7 @@ function ProgressLabel({ result }: { result: SkillResult | GroupResult }) {
     return <span className="result-progress result-progress-max">максимум</span>
   }
   if (result.progressToNext !== null && result.nextGrade) {
-    return <span className="result-progress">{result.progressToNext}% до {result.nextGrade}</span>
+    return <span className="result-progress">{result.progressToNext}% от {result.nextGrade}</span>
   }
   return null
 }

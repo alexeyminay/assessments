@@ -174,25 +174,26 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
                 <GradeBadge grade={overall.grade} />
               </span>
             </div>
-            {radarGroups.length >= 2 && (
-              <div className="result-radar-wrap">
-                <RadarChart
-                  labels={radarGroups.map(g => g.groupName)}
-                  values={radarGroups.map(g => g.normalizedScore)}
-                  color={SUMMARY_RADAR_COLOR}
-                />
-              </div>
-            )}
-            <div className="result-skills-table">
-              {groups.filter(g => g.mainSkills.length > 0).map(g => (
-                <div key={g.groupId} className="result-skill-row">
-                  <span className="result-skill-name">{g.groupName}</span>
-                  <GradeBadge grade={g.grade} />
-                  <ProgressLabel result={g} />
+            <div className="result-group-body">
+              {radarGroups.length >= 2 && (
+                <div className="result-radar-wrap">
+                  <RadarChart
+                    labels={radarGroups.map(g => g.groupName)}
+                    values={radarGroups.map(g => g.normalizedScore)}
+                    color={SUMMARY_RADAR_COLOR}
+                  />
                 </div>
-              ))}
+              )}
+              <div className="result-skills-table">
+                {groups.filter(g => g.mainSkills.length > 0).map(g => (
+                  <div key={g.groupId} className="result-skill-row">
+                    <span className="result-skill-name">{g.groupName}</span>
+                    <GradeBadge grade={g.grade} />
+                    <ProgressLabel result={g} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
         )
       })()}
 

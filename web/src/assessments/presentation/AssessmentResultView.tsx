@@ -183,6 +183,15 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
                 />
               </div>
             )}
+            <div className="result-skills-table">
+              {groups.filter(g => g.mainSkills.length > 0).map(g => (
+                <div key={g.groupId} className="result-skill-row">
+                  <span className="result-skill-name">{g.groupName}</span>
+                  <GradeBadge grade={g.grade} />
+                  <ProgressLabel result={g} />
+                </div>
+              ))}
+            </div>
           </div>
         )
       })()}

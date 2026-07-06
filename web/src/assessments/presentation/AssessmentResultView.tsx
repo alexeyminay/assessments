@@ -194,6 +194,7 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
                 ))}
               </div>
             </div>
+          </div>
         )
       })()}
 

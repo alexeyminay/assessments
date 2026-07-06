@@ -150,12 +150,20 @@ export function calcGroupResult(group: SkillGroupDto, checkedIds: Set<number>): 
   return { groupId: group.id, groupName: group.name, mainSkills, additionalSkills, achievedScore, maxScore, grade, nextGrade, progressToNext, normalizedScore }
 }
 
+function groupEffectiveWeight(group: GroupResult): number {
+  if (!group.grade) return 0
+  if (group.progressToNext !== null && group.progressToNext >= 90 && group.nextGrade) {
+    return GRADE_WEIGHTS[group.nextGrade] ?? GRADE_WEIGHTS[group.grade] ?? 0
+  }
+  return GRADE_WEIGHTS[group.grade] ?? 0
+}
+
 export function calcOverallResult(groups: GroupResult[]): OverallResult {
-  const allSkills = groups.flatMap(g => g.mainSkills)
-  const n = allSkills.length
+  const mainGroups = groups.filter(g => g.mainSkills.length > 0)
+  const n = mainGroups.length
   if (n === 0) return { achievedScore: 0, maxScore: 0, grade: null, nextGrade: null, progressToNext: null }
 
-  const achievedScore = allSkills.reduce((sum, s) => sum + effectiveGradeWeight(s), 0)
+  const achievedScore = mainGroups.reduce((sum, g) => sum + groupEffectiveWeight(g), 0)
   const maxScore = n * 2.0
   const thresholds: GradeThreshold[] = [
     { grade: 'Intern', threshold: n * 0.5 },

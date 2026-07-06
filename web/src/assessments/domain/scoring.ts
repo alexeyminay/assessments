@@ -44,6 +44,9 @@ function buildThresholds(items: Array<{ gradeLevel: string | null }>): GradeThre
   if (juniorMax > internMax)      out.push({ grade: 'Junior', threshold: juniorMax })
   if (middleMax > juniorMax)      out.push({ grade: 'Middle', threshold: middleMax })
   if (seniorMax > middleMax)      out.push({ grade: 'Senior', threshold: seniorMax })
+  if (out.length > 0 && out[out.length - 1].grade !== 'Senior') {
+    out.push({ grade: 'Senior', threshold: seniorMax })
+  }
   return out
 }
 

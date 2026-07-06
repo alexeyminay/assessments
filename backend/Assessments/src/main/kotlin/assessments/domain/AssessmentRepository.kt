@@ -18,4 +18,7 @@ interface AssessmentRepository {
 
     suspend fun updateAnswers(id: Int, userId: Int, answers: List<AnswerDto>): UpdateResult
     suspend fun upsertComment(id: Int, userId: Int, itemId: Int, text: String): UpdateResult
+
+    suspend fun excludeItem(id: Int, userId: Int, itemId: Int): ExcludeItemResult
+    suspend fun restoreItem(id: Int, userId: Int, itemId: Int): ExcludeItemResult
 }

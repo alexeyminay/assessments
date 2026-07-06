@@ -144,6 +144,32 @@ fun Route.assessmentRoutes(
             }
         }
 
+        post("/{id}/exclude-item/{itemId}") {
+            val ctx = call.requireAuth() ?: return@post
+            val id = call.parameters["id"]?.toIntOrNull()
+                ?: return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный id"))
+            val itemId = call.parameters["itemId"]?.toIntOrNull()
+                ?: return@post call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный itemId"))
+            when (updateUseCase.excludeItem(id, ctx.userId, itemId)) {
+                ExcludeItemResult.Success   -> call.respond(HttpStatusCode.OK)
+                ExcludeItemResult.NotFound  -> call.respond(HttpStatusCode.NotFound, ErrorResponse("Ассессмент не найден"))
+                ExcludeItemResult.Forbidden -> call.respond(HttpStatusCode.Forbidden, ErrorResponse("Нет доступа"))
+            }
+        }
+
+        delete("/{id}/exclude-item/{itemId}") {
+            val ctx = call.requireAuth() ?: return@delete
+            val id = call.parameters["id"]?.toIntOrNull()
+                ?: return@delete call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный id"))
+            val itemId = call.parameters["itemId"]?.toIntOrNull()
+                ?: return@delete call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный itemId"))
+            when (updateUseCase.restoreItem(id, ctx.userId, itemId)) {
+                ExcludeItemResult.Success   -> call.respond(HttpStatusCode.OK)
+                ExcludeItemResult.NotFound  -> call.respond(HttpStatusCode.NotFound, ErrorResponse("Ассессмент не найден"))
+                ExcludeItemResult.Forbidden -> call.respond(HttpStatusCode.Forbidden, ErrorResponse("Нет доступа"))
+            }
+        }
+
         put("/{id}/comment/{itemId}") {
             val ctx = call.requireAuth() ?: return@put
             val id = call.parameters["id"]?.toIntOrNull()

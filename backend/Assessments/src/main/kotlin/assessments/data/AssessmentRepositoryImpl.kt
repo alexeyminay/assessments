@@ -137,6 +137,9 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                 submittedAt     = row[AssessmentsTable.submittedAt],
                 reviewStartedAt = row[AssessmentsTable.reviewStartedAt],
                 completedAt     = row[AssessmentsTable.completedAt],
+                excludedItemIds = AssessmentExcludedItemsTable
+                    .selectAll().where { AssessmentExcludedItemsTable.assessmentId eq id }
+                    .map { it[AssessmentExcludedItemsTable.itemId] },
             )
         }
     }
@@ -199,7 +202,9 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                     AssessmentReviewersTable.selectAll()
                         .where { (AssessmentReviewersTable.assessmentId eq id) and (AssessmentReviewersTable.userId eq userId) }
                         .count() > 0
-            if (!isParticipant) return@transaction LockResult.Forbidden
+            val isAdmin = UserTable.selectAll().where { UserTable.id eq userId }
+                .singleOrNull()?.get(UserTable.role) == "admin"
+            if (!isParticipant && !isAdmin) return@transaction LockResult.Forbidden
             if (row[AssessmentsTable.lockUserId] == userId) return@transaction LockResult.AlreadyOwned
             val currentLockId = row[AssessmentsTable.lockUserId]
             val currentExpiry = row[AssessmentsTable.lockExpiresAt]
@@ -289,6 +294,38 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                     }
                 }
                 UpdateResult.Success
+            }
+        }
+
+    override suspend fun excludeItem(id: Int, userId: Int, itemId: Int): ExcludeItemResult =
+        withContext(Dispatchers.IO) {
+            transaction {
+                val err = checkWriteAccess(id, userId)
+                if (err != null) return@transaction ExcludeItemResult.Forbidden
+                val exists = AssessmentExcludedItemsTable.selectAll()
+                    .where { (AssessmentExcludedItemsTable.assessmentId eq id) and (AssessmentExcludedItemsTable.itemId eq itemId) }
+                    .count() > 0
+                if (!exists) {
+                    AssessmentExcludedItemsTable.insert {
+                        it[AssessmentExcludedItemsTable.assessmentId] = id
+                        it[AssessmentExcludedItemsTable.itemId]       = itemId
+                        it[AssessmentExcludedItemsTable.excludedById] = userId
+                        it[AssessmentExcludedItemsTable.createdAt]    = now()
+                    }
+                }
+                ExcludeItemResult.Success
+            }
+        }
+
+    override suspend fun restoreItem(id: Int, userId: Int, itemId: Int): ExcludeItemResult =
+        withContext(Dispatchers.IO) {
+            transaction {
+                val err = checkWriteAccess(id, userId)
+                if (err != null) return@transaction ExcludeItemResult.Forbidden
+                AssessmentExcludedItemsTable.deleteWhere {
+                    (AssessmentExcludedItemsTable.assessmentId eq id) and (AssessmentExcludedItemsTable.itemId eq itemId)
+                }
+                ExcludeItemResult.Success
             }
         }
 

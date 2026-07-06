@@ -33,6 +33,8 @@ export class AssessmentLockUseCase {
 
 export class UpdateAssessmentUseCase {
   constructor(private repo: AssessmentRepository) {}
-  answers(id: number, answers: AnswerDto[])             { return this.repo.updateAnswers(id, answers) }
-  comment(id: number, itemId: number, text: string)     { return this.repo.upsertComment(id, itemId, text) }
+  answers(id: number, answers: AnswerDto[])                 { return this.repo.updateAnswers(id, answers) }
+  comment(id: number, itemId: number, text: string)         { return this.repo.upsertComment(id, itemId, text) }
+  excludeItem(id: number, itemId: number)                   { return this.repo.excludeItem(id, itemId) }
+  restoreItem(id: number, itemId: number)                   { return this.repo.restoreItem(id, itemId) }
 }

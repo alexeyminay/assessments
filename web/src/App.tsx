@@ -184,6 +184,7 @@ function App() {
           <AssessmentViewerPage
             assessmentId={viewingAssessmentId}
             currentUserId={currentUserId}
+            role={role}
             getDetailUseCase={getAssessmentDetailUseCase}
             transitionUseCase={assessmentTransitionUseCase}
             lockUseCase={assessmentLockUseCase}

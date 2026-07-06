@@ -52,6 +52,7 @@ data class AssessmentDetail(
     val submittedAt: String?,
     val reviewStartedAt: String?,
     val completedAt: String?,
+    val excludedItemIds: List<Int>,
 )
 
 @Serializable
@@ -90,4 +91,10 @@ sealed class UpdateResult {
     object NotFound : UpdateResult()
     object Forbidden : UpdateResult()
     data class LockRequired(val lockedByEmail: String?, val expiresAt: String?) : UpdateResult()
+}
+
+sealed class ExcludeItemResult {
+    object Success : ExcludeItemResult()
+    object NotFound : ExcludeItemResult()
+    object Forbidden : ExcludeItemResult()
 }

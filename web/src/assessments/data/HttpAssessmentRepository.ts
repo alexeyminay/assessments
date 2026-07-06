@@ -80,6 +80,14 @@ export class HttpAssessmentRepository implements AssessmentRepository {
     }))
   }
 
+  async excludeItem(id: number, itemId: number): Promise<void> {
+    await expectOk(await this.authFetch.fetch(`${BASE}/${id}/exclude-item/${itemId}`, { method: 'POST' }))
+  }
+
+  async restoreItem(id: number, itemId: number): Promise<void> {
+    await expectOk(await this.authFetch.fetch(`${BASE}/${id}/exclude-item/${itemId}`, { method: 'DELETE' }))
+  }
+
   async upsertComment(id: number, itemId: number, text: string): Promise<void> {
     await expectOk(await this.authFetch.fetch(`${BASE}/${id}/comment/${itemId}`, {
       method: 'PUT',

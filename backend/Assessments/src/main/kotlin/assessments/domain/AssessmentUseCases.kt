@@ -34,4 +34,6 @@ class AssessmentLockUseCase(private val repo: AssessmentRepository) {
 class UpdateAssessmentUseCase(private val repo: AssessmentRepository) {
     suspend fun answers(id: Int, userId: Int, answers: List<AnswerDto>) = repo.updateAnswers(id, userId, answers)
     suspend fun comment(id: Int, userId: Int, itemId: Int, text: String) = repo.upsertComment(id, userId, itemId, text)
+    suspend fun excludeItem(id: Int, userId: Int, itemId: Int) = repo.excludeItem(id, userId, itemId)
+    suspend fun restoreItem(id: Int, userId: Int, itemId: Int) = repo.restoreItem(id, userId, itemId)
 }

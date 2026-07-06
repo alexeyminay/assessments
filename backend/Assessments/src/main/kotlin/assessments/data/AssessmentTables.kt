@@ -37,6 +37,14 @@ object AssessmentAnswersTable : Table("assessment_answers") {
     override val primaryKey = PrimaryKey(id)
 }
 
+object AssessmentExcludedItemsTable : Table("assessment_excluded_items") {
+    val assessmentId  = integer("assessment_id")
+    val itemId        = integer("item_id")
+    val excludedById  = integer("excluded_by_id")
+    val createdAt     = varchar("created_at", 50)
+    override val primaryKey = PrimaryKey(assessmentId, itemId)
+}
+
 object AssessmentCommentsTable : Table("assessment_comments") {
     val id            = integer("id").autoIncrement()
     val assessmentId  = integer("assessment_id")

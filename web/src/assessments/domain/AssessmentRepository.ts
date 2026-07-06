@@ -13,4 +13,6 @@ export interface AssessmentRepository {
   releaseLock(id: number): Promise<void>
   updateAnswers(id: number, answers: AnswerDto[]): Promise<void>
   upsertComment(id: number, itemId: number, text: string): Promise<void>
+  excludeItem(id: number, itemId: number): Promise<void>
+  restoreItem(id: number, itemId: number): Promise<void>
 }

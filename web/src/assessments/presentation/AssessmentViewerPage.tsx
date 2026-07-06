@@ -9,6 +9,7 @@ import { exportAssessmentToXlsx } from './exportAssessment'
 interface Props {
   assessmentId: number
   currentUserId: number
+  role: string | null
   getDetailUseCase: GetAssessmentDetailUseCase
   transitionUseCase: AssessmentTransitionUseCase
   lockUseCase: AssessmentLockUseCase
@@ -16,13 +17,30 @@ interface Props {
   onBack: () => void
 }
 
+function filterSnapshot(snap: TemplateDetailDto, excluded: Set<number>): TemplateDetailDto {
+  return {
+    ...snap,
+    skillGroups: snap.skillGroups.map(g => ({
+      ...g,
+      skills: g.skills.map(s => ({
+        ...s,
+        subgroups: s.subgroups.map(sg => ({
+          ...sg,
+          items: sg.items.filter(item => !excluded.has(item.id)),
+        })),
+      })),
+    })),
+  }
+}
+
 export function AssessmentViewerPage({
-  assessmentId, currentUserId,
+  assessmentId, currentUserId, role,
   getDetailUseCase, transitionUseCase, lockUseCase, updateUseCase,
   onBack,
 }: Props) {
   const [detail, setDetail] = useState<AssessmentDetail | null>(null)
   const [snapshot, setSnapshot] = useState<TemplateDetailDto | null>(null)
+  const [excludedItemIds, setExcludedItemIds] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -48,6 +66,7 @@ export function AssessmentViewerPage({
       setDetail(d)
       const snap = JSON.parse(d.snapshotJson) as TemplateDetailDto
       setSnapshot(snap)
+      setExcludedItemIds(new Set(d.excludedItemIds))
       setAnswers(new Map(d.answers.map(a => [a.itemId, a.checked])))
       setComments(new Map(d.comments.map(c => [c.itemId, c])))
       if (!selectedSkillId) {
@@ -67,13 +86,16 @@ export function AssessmentViewerPage({
     if (detail?.status === 'completed') setView('results')
   }, [detail?.status])
 
-  const isAssessee   = detail?.assessee.id === currentUserId
-  const isReviewer   = detail?.reviewers.some(r => r.id === currentUserId) ?? false
-  const isMeLocked   = detail?.lockUserId === currentUserId
-  const lockExpired  = detail?.lockExpiresAt
+  const isAdmin     = role === 'admin'
+  const isAssessee  = detail?.assessee.id === currentUserId
+  const isReviewer  = detail?.reviewers.some(r => r.id === currentUserId) ?? false
+  const isMeLocked  = detail?.lockUserId === currentUserId
+  const lockExpired = detail?.lockExpiresAt
     ? new Date(detail.lockExpiresAt) < new Date()
     : true
-  const canEdit      = isMeLocked && !lockExpired
+  const canEdit     = isMeLocked && !lockExpired
+
+  const filteredSnapshot = snapshot ? filterSnapshot(snapshot, excludedItemIds) : null
 
   const doAction = async (action: () => Promise<void>) => {
     setActionLoading(true)
@@ -128,7 +150,7 @@ export function AssessmentViewerPage({
     })
   }
 
-  const allSkills = snapshot?.skillGroups.flatMap(g => g.skills) ?? []
+  const allSkills = filteredSnapshot?.skillGroups.flatMap(g => g.skills) ?? []
   const selectedSkill = allSkills.find(s => s.id === selectedSkillId) ?? null
 
   if (loading) return <div className="viewer-loading"><p className="page-placeholder">Загрузка…</p></div>
@@ -170,8 +192,8 @@ export function AssessmentViewerPage({
         )}
       </div>
 
-      {view === 'results' && detail.status === 'completed' && snapshot ? (
-        <AssessmentResultView detail={detail} snapshot={snapshot} onSwitchToQuestions={() => setView('questions')} />
+      {view === 'results' && detail.status === 'completed' && filteredSnapshot ? (
+        <AssessmentResultView detail={detail} snapshot={filteredSnapshot} onSwitchToQuestions={() => setView('questions')} />
       ) : null}
 
       {/* action panel */}
@@ -213,6 +235,16 @@ export function AssessmentViewerPage({
               Завершить
             </button>
           )}
+          {detail.status === 'completed' && isAdmin && !canEdit && (
+            <button className="btn-secondary" disabled={actionLoading} onClick={() => doAction(() => lockUseCase.acquire(assessmentId))}>
+              Редактировать
+            </button>
+          )}
+          {detail.status === 'completed' && isAdmin && canEdit && (
+            <button className="btn-secondary" disabled={actionLoading} onClick={() => doAction(() => lockUseCase.release(assessmentId))}>
+              Завершить редактирование
+            </button>
+          )}
         </div>
         {showCompletePanel && (
           <div className="complete-panel">
@@ -239,7 +271,7 @@ export function AssessmentViewerPage({
 
       {view === 'questions' && <div className="viewer-body">
         <aside className="viewer-sidebar">
-          {snapshot.skillGroups.map(group => (
+          {filteredSnapshot!.skillGroups.map(group => (
             <div key={group.id} className="sidebar-group">
               <button className="sidebar-group-header" onClick={() => toggleGroup(group.id)}>
                 <span className="sidebar-group-name">{group.name}</span>
@@ -267,6 +299,7 @@ export function AssessmentViewerPage({
             <ActiveSkillContent
               skill={selectedSkill}
               canEdit={canEdit}
+              isAdmin={isAdmin}
               answers={answers}
               comments={comments}
               activeCommentItemId={activeCommentItemId}
@@ -276,6 +309,27 @@ export function AssessmentViewerPage({
               onCommentDraftChange={setCommentDraft}
               onCommentSave={handleCommentSave}
               onCommentCancel={() => setActiveCommentItemId(null)}
+              onExcludeItem={async itemId => {
+                try {
+                  await updateUseCase.excludeItem(assessmentId, itemId)
+                  setExcludedItemIds(prev => new Set(prev).add(itemId))
+                } catch (e) {
+                  setActionError(e instanceof Error ? e.message : 'Ошибка удаления')
+                }
+              }}
+              onRestoreItem={async itemId => {
+                try {
+                  await updateUseCase.restoreItem(assessmentId, itemId)
+                  setExcludedItemIds(prev => {
+                    const next = new Set(prev)
+                    next.delete(itemId)
+                    return next
+                  })
+                } catch (e) {
+                  setActionError(e instanceof Error ? e.message : 'Ошибка восстановления')
+                }
+              }}
+              excludedItemIds={excludedItemIds}
             />
           ) : (
             <p className="page-placeholder">Выберите навык</p>
@@ -289,6 +343,7 @@ export function AssessmentViewerPage({
 interface SkillContentProps {
   skill: SkillDto
   canEdit: boolean
+  isAdmin: boolean
   answers: Map<number, boolean>
   comments: Map<number, CommentDto>
   activeCommentItemId: number | null
@@ -298,12 +353,16 @@ interface SkillContentProps {
   onCommentDraftChange: (text: string) => void
   onCommentSave: (itemId: number) => void
   onCommentCancel: () => void
+  onExcludeItem: (itemId: number) => Promise<void>
+  onRestoreItem: (itemId: number) => Promise<void>
+  excludedItemIds: Set<number>
 }
 
 function ActiveSkillContent({
-  skill, canEdit, answers, comments,
-  activeCommentItemId, commentDraft,
+  skill, canEdit, isAdmin, answers, comments,
+  activeCommentItemId, commentDraft, excludedItemIds,
   onCheckbox, onCommentOpen, onCommentDraftChange, onCommentSave, onCommentCancel,
+  onExcludeItem, onRestoreItem,
 }: SkillContentProps) {
   const itemCount = skill.subgroups.reduce((n, s) => n + s.items.length, 0)
 
@@ -373,13 +432,28 @@ function ActiveSkillContent({
                         )}
                         <span className="badge badge-type">{item.knowledgeType}</span>
                       </div>
-                      <button
-                        className={`comment-btn${comment ? ' has-comment' : ''}`}
-                        disabled={!canEdit}
-                        onClick={() => onCommentOpen(item.id)}
-                      >
-                        {comment ? 'Изменить комментарий' : 'Оставить комментарий'}
-                      </button>
+                      {excludedItemIds.has(item.id) ? (
+                        isAdmin && canEdit && (
+                          <button className="btn-restore" onClick={() => onRestoreItem(item.id)}>
+                            Восстановить
+                          </button>
+                        )
+                      ) : (
+                        <>
+                          <button
+                            className={`comment-btn${comment ? ' has-comment' : ''}`}
+                            disabled={!canEdit}
+                            onClick={() => onCommentOpen(item.id)}
+                          >
+                            {comment ? 'Изменить комментарий' : 'Оставить комментарий'}
+                          </button>
+                          {isAdmin && canEdit && (
+                            <button className="btn-delete-item" onClick={() => onExcludeItem(item.id)}>
+                              Удалить
+                            </button>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -59,6 +59,7 @@ export interface AssessmentDetail {
   submittedAt: string | null
   reviewStartedAt: string | null
   completedAt: string | null
+  excludedItemIds: number[]
 }
 
 export interface CreateAssessmentRequest {

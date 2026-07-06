@@ -4,6 +4,8 @@ import type { TemplateDetailDto } from '../../templates/domain/AssessmentTemplat
 import { calcGroupResult, type GroupResult, type SkillResult } from '../domain/scoring'
 import { RadarChart, RADAR_COLORS, type RadarColor } from './RadarChart'
 
+const SUMMARY_RADAR_COLOR: RadarColor = { fill: 'rgba(148,163,184,0.28)', stroke: '#64748b', dot: '#64748b' }
+
 interface Props {
   detail:               AssessmentDetail
   snapshot:             TemplateDetailDto
@@ -159,6 +161,28 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
           <p className="result-final-comment-text">{detail.finalComment}</p>
         </div>
       )}
+
+      {/* Summary radar */}
+      {(() => {
+        const radarGroups = groups.filter(g => g.mainSkills.length >= 2)
+        if (radarGroups.length >= 2) {
+          return (
+            <div className="result-group">
+              <div className="result-group-header">
+                <span className="result-group-name">Общий уровень по группам</span>
+              </div>
+              <div className="result-radar-wrap">
+                <RadarChart
+                  labels={radarGroups.map(g => g.groupName)}
+                  values={radarGroups.map(g => g.normalizedScore)}
+                  color={SUMMARY_RADAR_COLOR}
+                />
+              </div>
+            </div>
+          )
+        }
+        return null
+      })()}
 
       {/* Skill groups */}
       {groups.map((group, idx) => (

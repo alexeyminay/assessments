@@ -29,6 +29,7 @@ export interface GroupResult {
   grade: string | null
   nextGrade: string | null
   progressToNext: number | null
+  normalizedScore: number  // 0-1 for radar
 }
 
 interface GradeThreshold { grade: string; threshold: number }
@@ -107,16 +108,22 @@ export function calcSkillResult(skill: SkillDto, checkedIds: Set<number>): Skill
   }
 }
 
+function effectiveGradeWeight(skill: SkillResult): number {
+  if (!skill.grade) return 0
+  if (skill.progressToNext !== null && skill.progressToNext >= 90 && skill.nextGrade) {
+    return GRADE_WEIGHTS[skill.nextGrade] ?? GRADE_WEIGHTS[skill.grade] ?? 0
+  }
+  return GRADE_WEIGHTS[skill.grade] ?? 0
+}
+
 export function calcGroupResult(group: SkillGroupDto, checkedIds: Set<number>): GroupResult {
   const skillResults     = group.skills.map(s => calcSkillResult(s, checkedIds))
   const mainSkills       = skillResults.filter(s => !s.isAdditional)
   const additionalSkills = skillResults.filter(s =>  s.isAdditional)
 
-  // Group score = sum of achieved grade weights per main skill (0 if no grade).
-  const achievedScore = mainSkills.reduce(
-    (sum, s) => sum + (s.grade ? (GRADE_WEIGHTS[s.grade] ?? 0) : 0),
-    0,
-  )
+  // Group score = sum of effective grade weights per main skill.
+  // If progressToNext >= 90%, the skill contributes the NEXT grade's weight.
+  const achievedScore = mainSkills.reduce((sum, s) => sum + effectiveGradeWeight(s), 0)
 
   // Fixed thresholds: N skills × grade weight.
   // Equivalent to "average skill grade ≥ threshold grade".
@@ -130,6 +137,7 @@ export function calcGroupResult(group: SkillGroupDto, checkedIds: Set<number>): 
 
   const maxScore = n * 2.0
   const { grade, nextGrade, progressToNext } = resolveGrade(achievedScore, thresholds)
+  const normalizedScore = maxScore > 0 ? Math.min(1, achievedScore / maxScore) : 0
 
-  return { groupId: group.id, groupName: group.name, mainSkills, additionalSkills, achievedScore, maxScore, grade, nextGrade, progressToNext }
+  return { groupId: group.id, groupName: group.name, mainSkills, additionalSkills, achievedScore, maxScore, grade, nextGrade, progressToNext, normalizedScore }
 }

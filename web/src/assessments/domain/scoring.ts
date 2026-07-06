@@ -19,6 +19,14 @@ export interface SkillResult {
   normalizedScore: number        // 0-1 for radar
 }
 
+export interface OverallResult {
+  achievedScore: number
+  maxScore: number
+  grade: string | null
+  nextGrade: string | null
+  progressToNext: number | null
+}
+
 export interface GroupResult {
   groupId: number
   groupName: string
@@ -140,4 +148,22 @@ export function calcGroupResult(group: SkillGroupDto, checkedIds: Set<number>): 
   const normalizedScore = maxScore > 0 ? Math.min(1, achievedScore / maxScore) : 0
 
   return { groupId: group.id, groupName: group.name, mainSkills, additionalSkills, achievedScore, maxScore, grade, nextGrade, progressToNext, normalizedScore }
+}
+
+export function calcOverallResult(groups: GroupResult[]): OverallResult {
+  const allSkills = groups.flatMap(g => g.mainSkills)
+  const n = allSkills.length
+  if (n === 0) return { achievedScore: 0, maxScore: 0, grade: null, nextGrade: null, progressToNext: null }
+
+  const achievedScore = allSkills.reduce((sum, s) => sum + effectiveGradeWeight(s), 0)
+  const maxScore = n * 2.0
+  const thresholds: GradeThreshold[] = [
+    { grade: 'Intern', threshold: n * 0.5 },
+    { grade: 'Junior', threshold: n * 1.0 },
+    { grade: 'Middle', threshold: n * 1.5 },
+    { grade: 'Senior', threshold: n * 2.0 },
+  ]
+  const { grade, nextGrade, progressToNext } = resolveGrade(achievedScore, thresholds)
+
+  return { achievedScore, maxScore, grade, nextGrade, progressToNext }
 }

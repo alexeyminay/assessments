@@ -1,10 +1,10 @@
 import type { AssessmentDetail } from '../domain/types'
 import { displayUser } from '../domain/types'
 import type { TemplateDetailDto } from '../../templates/domain/AssessmentTemplate'
-import { calcGroupResult, type GroupResult, type SkillResult } from '../domain/scoring'
+import { calcGroupResult, calcOverallResult, type GroupResult, type OverallResult, type SkillResult } from '../domain/scoring'
 import { RadarChart, RADAR_COLORS, type RadarColor } from './RadarChart'
 
-const SUMMARY_RADAR_COLOR: RadarColor = { fill: 'rgba(148,163,184,0.28)', stroke: '#64748b', dot: '#64748b' }
+const SUMMARY_RADAR_COLOR: RadarColor = { fill: 'rgba(216,180,226,0.35)', stroke: '#b07cc9', dot: '#b07cc9' }
 
 interface Props {
   detail:               AssessmentDetail
@@ -24,7 +24,7 @@ function GradeBadge({ grade }: { grade: string | null }) {
   return <span className={`badge ${GRADE_CLASS[grade] ?? 'badge-level'}`}>{grade}</span>
 }
 
-function ProgressLabel({ result }: { result: SkillResult | GroupResult }) {
+function ProgressLabel({ result }: { result: SkillResult | GroupResult | OverallResult }) {
   if (result.grade === 'Senior' || (!result.nextGrade && result.grade)) {
     return <span className="result-progress result-progress-max">максимум</span>
   }
@@ -99,6 +99,7 @@ function formatDate(iso: string): string {
 export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: Props) {
   const checkedIds = new Set(detail.answers.filter(a => a.checked).map(a => a.itemId))
   const groups     = snapshot.skillGroups.map(g => calcGroupResult(g, checkedIds))
+  const overall    = calcOverallResult(groups)
 
   return (
     <div className="result-view">
@@ -162,15 +163,19 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
         </div>
       )}
 
-      {/* Summary radar */}
+      {/* Summary radar & overall grade */}
       {(() => {
         const radarGroups = groups.filter(g => g.mainSkills.length >= 2)
-        if (radarGroups.length >= 2) {
-          return (
-            <div className="result-group">
-              <div className="result-group-header">
-                <span className="result-group-name">Общий уровень по группам</span>
-              </div>
+        return (
+          <div className="result-group">
+            <div className="result-group-header">
+              <span className="result-group-name">Общий уровень по группам</span>
+              <span className="result-group-grade">
+                <GradeBadge grade={overall.grade} />
+                <ProgressLabel result={overall} />
+              </span>
+            </div>
+            {radarGroups.length >= 2 && (
               <div className="result-radar-wrap">
                 <RadarChart
                   labels={radarGroups.map(g => g.groupName)}
@@ -178,10 +183,9 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
                   color={SUMMARY_RADAR_COLOR}
                 />
               </div>
-            </div>
-          )
-        }
-        return null
+            )}
+          </div>
+        )
       })()}
 
       {/* Skill groups */}

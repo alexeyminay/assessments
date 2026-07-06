@@ -1,2 +1,17 @@
 infra/.env
 example/*
+
+# IDE
+.idea/
+.claude/
+
+# Backend
+backend/Assessments/.gradle/
+backend/Assessments/build/
+
+# Frontend
+web/dist/
+web/node_modules/
+
+# OS
+.DS_Store

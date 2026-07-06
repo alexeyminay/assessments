@@ -172,7 +172,6 @@ export function AssessmentResultView({ detail, snapshot, onSwitchToQuestions }: 
               <span className="result-group-name">Общий уровень по группам</span>
               <span className="result-group-grade">
                 <GradeBadge grade={overall.grade} />
-                <ProgressLabel result={overall} />
               </span>
             </div>
             {radarGroups.length >= 2 && (

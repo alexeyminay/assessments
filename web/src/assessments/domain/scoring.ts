@@ -15,7 +15,7 @@ export interface SkillResult {
   maxScore: number
   grade: string | null
   nextGrade: string | null
-  progressToNext: number | null  // 0-100, variant B: (score-cur)/(next-cur)
+  progressToNext: number | null  // 0-100, score / nextGradeThreshold * 100
   normalizedScore: number        // 0-1 for radar
 }
 
@@ -65,12 +65,8 @@ function resolveGrade(
   const next = idx < thresholds.length - 1 ? thresholds[idx + 1] : null
 
   let progressToNext: number | null = null
-  if (next) {
-    const lo = cur?.threshold ?? 0
-    const hi = next.threshold
-    progressToNext = hi > lo
-      ? Math.min(100, Math.max(0, Math.round(((hi - score) / (hi - lo)) * 100)))
-      : null
+  if (next && next.threshold > 0) {
+    progressToNext = Math.min(100, Math.max(0, Math.round((score / next.threshold) * 100)))
   }
 
   return { grade: cur?.grade ?? null, nextGrade: next?.grade ?? null, progressToNext }

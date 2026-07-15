@@ -47,12 +47,14 @@ fun Route.assessmentRoutes(
         }
 
         get("/{id}") {
-            call.requireAuth() ?: return@get
+            val ctx = call.requireAuth() ?: return@get
             val id = call.parameters["id"]?.toIntOrNull()
                 ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse("Некорректный id"))
-            val detail = getDetailUseCase.execute(id)
-                ?: return@get call.respond(HttpStatusCode.NotFound, ErrorResponse("Ассессмент не найден"))
-            call.respond(detail)
+            when (val result = getDetailUseCase.execute(id, ctx.userId, ctx.role)) {
+                is DetailResult.Success  -> call.respond(result.detail)
+                DetailResult.NotFound    -> call.respond(HttpStatusCode.NotFound, ErrorResponse("Ассессмент не найден"))
+                DetailResult.Forbidden   -> call.respond(HttpStatusCode.Forbidden, ErrorResponse("Нет доступа"))
+            }
         }
 
         post("/{id}/start") {

@@ -6,7 +6,7 @@ interface AssessmentRepository {
     suspend fun create(req: CreateAssessmentRequest, adminId: Int, snapshot: TemplateDetailDto, templateName: String): Int
     suspend fun list(userId: Int, userRole: String, tab: String): List<AssessmentListItem>
     suspend fun tabCounts(userId: Int, userRole: String): AssessmentTabCounts
-    suspend fun getById(id: Int): AssessmentDetail?
+    suspend fun getById(id: Int, userId: Int, userRole: String): DetailResult
 
     suspend fun start(id: Int, userId: Int): TransitionResult
     suspend fun submit(id: Int, userId: Int): TransitionResult

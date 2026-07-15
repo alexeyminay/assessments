@@ -16,7 +16,7 @@ class ListAssessmentsUseCase(private val repo: AssessmentRepository) {
 }
 
 class GetAssessmentDetailUseCase(private val repo: AssessmentRepository) {
-    suspend fun execute(id: Int): AssessmentDetail? = repo.getById(id)
+    suspend fun execute(id: Int, userId: Int, userRole: String): DetailResult = repo.getById(id, userId, userRole)
 }
 
 class AssessmentTransitionUseCase(private val repo: AssessmentRepository) {

@@ -98,3 +98,9 @@ sealed class ExcludeItemResult {
     object NotFound : ExcludeItemResult()
     object Forbidden : ExcludeItemResult()
 }
+
+sealed class DetailResult {
+    data class Success(val detail: AssessmentDetail) : DetailResult()
+    object NotFound : DetailResult()
+    object Forbidden : DetailResult()
+}

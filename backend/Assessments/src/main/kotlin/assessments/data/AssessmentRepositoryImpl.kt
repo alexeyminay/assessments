@@ -98,11 +98,17 @@ class AssessmentRepositoryImpl : AssessmentRepository {
             }
         }
 
-    override suspend fun getById(id: Int): AssessmentDetail? = withContext(Dispatchers.IO) {
+    override suspend fun getById(id: Int, userId: Int, userRole: String): DetailResult = withContext(Dispatchers.IO) {
         transaction {
             val row = AssessmentsTable.selectAll().where { AssessmentsTable.id eq id }
-                .singleOrNull() ?: return@transaction null
-            AssessmentDetail(
+                .singleOrNull() ?: return@transaction DetailResult.NotFound
+            val isAdmin = userRole == "admin"
+            val isAssessee = row[AssessmentsTable.assesseeId] == userId
+            val isReviewer = AssessmentReviewersTable.selectAll()
+                .where { (AssessmentReviewersTable.assessmentId eq id) and (AssessmentReviewersTable.userId eq userId) }
+                .count() > 0
+            if (!isAdmin && !isAssessee && !isReviewer) return@transaction DetailResult.Forbidden
+            DetailResult.Success(AssessmentDetail(
                 id              = row[AssessmentsTable.id],
                 templateName    = row[AssessmentsTable.templateName],
                 assessee        = userInfo(row[AssessmentsTable.assesseeId]),
@@ -140,7 +146,7 @@ class AssessmentRepositoryImpl : AssessmentRepository {
                 excludedItemIds = AssessmentExcludedItemsTable
                     .selectAll().where { AssessmentExcludedItemsTable.assessmentId eq id }
                     .map { it[AssessmentExcludedItemsTable.itemId] },
-            )
+            ))
         }
     }
 
